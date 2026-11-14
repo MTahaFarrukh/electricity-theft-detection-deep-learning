@@ -1,0 +1,46 @@
+# --- Secrets ---
+.env
+*.env.local
+
+# --- Python ---
+__pycache__/
+*.py[cod]
+.venv/
+venv/
+.pytest_cache/
+.ipynb_checkpoints/
+*.egg-info/
+
+# --- Datasets (licence/size: download them, don't commit them) ---
+data/raw/*
+data/processed/*
+!data/raw/.gitkeep
+!data/processed/.gitkeep
+
+# --- Trained models & fitted artifacts (large binaries; regenerate by training) ---
+models/**/*.keras
+models/**/*.h5
+models/**/*.joblib
+artifacts/**/*.joblib
+artifacts/**/*.npy
+# metadata JSON (threshold, feature config, model version) IS committed
+!artifacts/metadata/*.json
+
+# --- Database ---
+*.db
+*.sqlite
+*.sqlite3
+
+# --- Customer-level evaluation output ---
+reports/results/test_predictions_deployed.csv
+
+# --- Node / frontend ---
+node_modules/
+frontend/dist/
+frontend/.env
+
+# --- OS / editors ---
+.DS_Store
+Thumbs.db
+.vscode/
+.idea/

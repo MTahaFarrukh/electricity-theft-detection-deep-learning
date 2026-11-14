@@ -1,0 +1,22 @@
+{
+  "seed": 42,
+  "n_days": 1035,
+  "first_day": "2014-01-01",
+  "splits": {
+    "train": {
+      "n": 29657,
+      "n_theft_labelled": 2528,
+      "positive_rate": 0.08524125838756448
+    },
+    "val": {
+      "n": 6355,
+      "n_theft_labelled": 542,
+      "positive_rate": 0.08528717545239968
+    },
+    "test": {
+      "n": 6355,
+      "n_theft_labelled": 542,
+      "positive_rate": 0.08528717545239968
+    }
+  }
+}

@@ -1,0 +1,27 @@
+# AI-Based Electricity Theft Detection System Using CNN-LSTM
+# Python 3.11 or 3.12 (TensorFlow does not yet support every newer Python release).
+# Install with:  pip install -r requirements.txt
+
+# --- Data & ML ---
+pandas>=2.2,<3.0
+numpy>=1.26,<2.2
+scikit-learn>=1.5,<1.8
+tensorflow>=2.17,<2.21
+joblib>=1.4
+
+# --- Visualisation / EDA ---
+matplotlib>=3.8
+seaborn>=0.13
+ipykernel>=6.29          # run the notebooks in VS Code / Jupyter
+
+# --- Backend ---
+fastapi>=0.115
+uvicorn[standard]>=0.30
+pydantic>=2.7
+pydantic-settings>=2.3
+sqlalchemy>=2.0
+python-dotenv>=1.0
+httpx>=0.27              # FastAPI TestClient + the real-time simulator's HTTP client
+
+# --- Testing ---
+pytest>=8.2

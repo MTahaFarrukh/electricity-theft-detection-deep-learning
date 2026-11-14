@@ -1,0 +1,27 @@
+{
+  "model": "cnn_lstm",
+  "run": "cnn_lstm@seed1",
+  "model_path": "models/cnn_lstm/runs/seed1/cnn_lstm.keras",
+  "preprocessor_path": "artifacts/scalers/preprocessor.json",
+  "threshold": 0.7640753984451294,
+  "threshold_rule": "maximises F1 on the validation split",
+  "selection_rule": "architecture with highest mean validation PR-AUC over runs; best run of that architecture",
+  "validation_metrics": {
+    "accuracy": 0.9104642014162078,
+    "precision": 0.4773109243697479,
+    "recall": 0.5239852398523985,
+    "f1": 0.4995602462620933,
+    "pr_auc": 0.49508851543931165,
+    "roc_auc": 0.8474120862832574,
+    "fpr": 0.05350077412695682,
+    "threshold": 0.7640753984451294,
+    "confusion_matrix": {
+      "tn": 5502,
+      "fp": 311,
+      "fn": 258,
+      "tp": 284
+    }
+  },
+  "n_days": 1035,
+  "first_day": "2014-01-01"
+}

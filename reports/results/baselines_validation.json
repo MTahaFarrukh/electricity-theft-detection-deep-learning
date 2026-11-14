@@ -1,0 +1,75 @@
+{
+  "split": "validation",
+  "positive_rate": 0.08528717545239968,
+  "models": {
+    "missingness_only_lr": {
+      "accuracy": 0.8029897718332022,
+      "precision": 0.18584070796460178,
+      "recall": 0.3874538745387454,
+      "f1": 0.25119617224880386,
+      "pr_auc": 0.16996075144995146,
+      "roc_auc": 0.6653153035917079,
+      "fpr": 0.15826595561672113,
+      "threshold": 0.5056419371775551,
+      "confusion_matrix": {
+        "tn": 4893,
+        "fp": 920,
+        "fn": 332,
+        "tp": 210
+      },
+      "train_seconds": 0.1
+    },
+    "logistic_regression": {
+      "accuracy": 0.8653029110936271,
+      "precision": 0.297680412371134,
+      "recall": 0.4261992619926199,
+      "f1": 0.3505311077389985,
+      "pr_auc": 0.29159973459757854,
+      "roc_auc": 0.7732401545587794,
+      "fpr": 0.09375537588164459,
+      "threshold": 0.6662669914188825,
+      "confusion_matrix": {
+        "tn": 5268,
+        "fp": 545,
+        "fn": 311,
+        "tp": 231
+      },
+      "train_seconds": 0.8,
+      "chosen_C": 0.01
+    },
+    "random_forest": {
+      "accuracy": 0.9043273013375295,
+      "precision": 0.44021739130434784,
+      "recall": 0.4483394833948339,
+      "f1": 0.4442413162705667,
+      "pr_auc": 0.41757942965269496,
+      "roc_auc": 0.8280506600868521,
+      "fpr": 0.05315671770170308,
+      "threshold": 0.36745458888708404,
+      "confusion_matrix": {
+        "tn": 5504,
+        "fp": 309,
+        "fn": 299,
+        "tp": 243
+      },
+      "train_seconds": 10.6,
+      "top_features": {
+        "max": 0.0515,
+        "monthly_std": 0.0515,
+        "trend_slope": 0.0445,
+        "std": 0.0426,
+        "miss_n_gaps": 0.0366,
+        "month_2016-10": 0.0347,
+        "p95": 0.0321,
+        "iqr": 0.0298,
+        "month_2016-09": 0.0243,
+        "month_2016-04": 0.024,
+        "mean_abs_diff": 0.0234,
+        "largest_monthly_rise": 0.0228,
+        "miss_fraction": 0.0219,
+        "month_2016-07": 0.0215,
+        "month_2016-05": 0.0215
+      }
+    }
+  }
+}

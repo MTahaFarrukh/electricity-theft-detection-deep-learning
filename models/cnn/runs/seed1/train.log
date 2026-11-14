@@ -1,0 +1,140 @@
+Train (29657, 1036, 2), val (6355, 1036, 2)
+Model: "cnn"
++--------------------------------------------------------------------------+
+| Layer (type)        | Output Shape      |    Param # | Connected to      |
+|---------------------+-------------------+------------+-------------------|
+| series (InputLayer) | (None, 1036, 2)   |          0 | -                 |
+|---------------------+-------------------+------------+-------------------|
+| conv1d (Conv1D)     | (None, 1036, 32)  |        448 | series[0][0]      |
+|---------------------+-------------------+------------+-------------------|
+| batch_normalization | (None, 1036, 32)  |        128 | conv1d[0][0]      |
+| (BatchNormalizatio… |                   |            |                   |
+|---------------------+-------------------+------------+-------------------|
+| re_lu (ReLU)        | (None, 1036, 32)  |          0 | batch_normalizat… |
+|---------------------+-------------------+------------+-------------------|
+| max_pooling1d       | (None, 518, 32)   |          0 | re_lu[0][0]       |
+| (MaxPooling1D)      |                   |            |                   |
+|---------------------+-------------------+------------+-------------------|
+| conv1d_1 (Conv1D)   | (None, 518, 64)   |     10,240 | max_pooling1d[0]… |
+|---------------------+-------------------+------------+-------------------|
+| batch_normalizatio… | (None, 518, 64)   |        256 | conv1d_1[0][0]    |
+| (BatchNormalizatio… |                   |            |                   |
+|---------------------+-------------------+------------+-------------------|
+| re_lu_1 (ReLU)      | (None, 518, 64)   |          0 | batch_normalizat… |
+|---------------------+-------------------+------------+-------------------|
+| max_pooling1d_1     | (None, 259, 64)   |          0 | re_lu_1[0][0]     |
+| (MaxPooling1D)      |                   |            |                   |
+|---------------------+-------------------+------------+-------------------|
+| conv1d_2 (Conv1D)   | (None, 259, 64)   |     12,288 | max_pooling1d_1[… |
+|---------------------+-------------------+------------+-------------------|
+| batch_normalizatio… | (None, 259, 64)   |        256 | conv1d_2[0][0]    |
+| (BatchNormalizatio… |                   |            |                   |
+|---------------------+-------------------+------------+-------------------|
+| re_lu_2 (ReLU)      | (None, 259, 64)   |          0 | batch_normalizat… |
+|---------------------+-------------------+------------+-------------------|
+| max_pooling1d_2     | (None, 129, 64)   |          0 | re_lu_2[0][0]     |
+| (MaxPooling1D)      |                   |            |                   |
+|---------------------+-------------------+------------+-------------------|
+| global_average_poo… | (None, 64)        |          0 | max_pooling1d_2[… |
+| (GlobalAveragePool… |                   |            |                   |
+|---------------------+-------------------+------------+-------------------|
+| global_max_pooling… | (None, 64)        |          0 | max_pooling1d_2[… |
+| (GlobalMaxPooling1… |                   |            |                   |
+|---------------------+-------------------+------------+-------------------|
+| concatenate         | (None, 128)       |          0 | global_average_p… |
+| (Concatenate)       |                   |            | global_max_pooli… |
+|---------------------+-------------------+------------+-------------------|
+| dropout (Dropout)   | (None, 128)       |          0 | concatenate[0][0] |
+|---------------------+-------------------+------------+-------------------|
+| dense (Dense)       | (None, 32)        |      4,128 | dropout[0][0]     |
+|---------------------+-------------------+------------+-------------------|
+| dropout_1 (Dropout) | (None, 32)        |          0 | dense[0][0]       |
+|---------------------+-------------------+------------+-------------------|
+| risk_score (Dense)  | (None, 1)         |         33 | dropout_1[0][0]   |
++--------------------------------------------------------------------------+
+ Total params: 27,777 (108.50 KB)
+ Trainable params: 27,457 (107.25 KB)
+ Non-trainable params: 320 (1.25 KB)
+
+Epoch 1/40
+232/232 - 62s - 268ms/step - loss: 0.6815 - pr_auc: 0.1481 - roc_auc: 0.6425 - val_loss: 0.5978 - val_pr_auc: 0.2464 - val_roc_auc: 0.7271 - learning_rate: 0.0010
+Epoch 2/40
+232/232 - 54s - 234ms/step - loss: 0.6239 - pr_auc: 0.2104 - roc_auc: 0.7076 - val_loss: 0.6112 - val_pr_auc: 0.2537 - val_roc_auc: 0.7442 - learning_rate: 0.0010
+Epoch 3/40
+232/232 - 59s - 255ms/step - loss: 0.6115 - pr_auc: 0.2220 - roc_auc: 0.7224 - val_loss: 0.6204 - val_pr_auc: 0.2744 - val_roc_auc: 0.7604 - learning_rate: 0.0010
+Epoch 4/40
+232/232 - 56s - 242ms/step - loss: 0.6014 - pr_auc: 0.2352 - roc_auc: 0.7372 - val_loss: 0.6192 - val_pr_auc: 0.2778 - val_roc_auc: 0.7641 - learning_rate: 0.0010
+Epoch 5/40
+232/232 - 50s - 217ms/step - loss: 0.5969 - pr_auc: 0.2416 - roc_auc: 0.7439 - val_loss: 0.6630 - val_pr_auc: 0.2910 - val_roc_auc: 0.7782 - learning_rate: 0.0010
+Epoch 6/40
+232/232 - 52s - 224ms/step - loss: 0.5952 - pr_auc: 0.2408 - roc_auc: 0.7436 - val_loss: 0.6324 - val_pr_auc: 0.2934 - val_roc_auc: 0.7745 - learning_rate: 0.0010
+Epoch 7/40
+232/232 - 50s - 216ms/step - loss: 0.5872 - pr_auc: 0.2509 - roc_auc: 0.7520 - val_loss: 0.5882 - val_pr_auc: 0.3083 - val_roc_auc: 0.7906 - learning_rate: 0.0010
+Epoch 8/40
+232/232 - 49s - 209ms/step - loss: 0.5812 - pr_auc: 0.2600 - roc_auc: 0.7602 - val_loss: 0.6020 - val_pr_auc: 0.3091 - val_roc_auc: 0.7900 - learning_rate: 0.0010
+Epoch 9/40
+232/232 - 48s - 209ms/step - loss: 0.5830 - pr_auc: 0.2587 - roc_auc: 0.7578 - val_loss: 0.5868 - val_pr_auc: 0.3157 - val_roc_auc: 0.7942 - learning_rate: 0.0010
+Epoch 10/40
+232/232 - 50s - 214ms/step - loss: 0.5764 - pr_auc: 0.2719 - roc_auc: 0.7665 - val_loss: 0.5674 - val_pr_auc: 0.3199 - val_roc_auc: 0.7995 - learning_rate: 0.0010
+Epoch 11/40
+232/232 - 49s - 211ms/step - loss: 0.5725 - pr_auc: 0.2757 - roc_auc: 0.7693 - val_loss: 0.5988 - val_pr_auc: 0.3182 - val_roc_auc: 0.8030 - learning_rate: 0.0010
+Epoch 12/40
+232/232 - 51s - 219ms/step - loss: 0.5659 - pr_auc: 0.2812 - roc_auc: 0.7752 - val_loss: 0.5944 - val_pr_auc: 0.3359 - val_roc_auc: 0.8052 - learning_rate: 0.0010
+Epoch 13/40
+232/232 - 55s - 236ms/step - loss: 0.5655 - pr_auc: 0.2901 - roc_auc: 0.7774 - val_loss: 0.5383 - val_pr_auc: 0.3350 - val_roc_auc: 0.8069 - learning_rate: 0.0010
+Epoch 14/40
+232/232 - 50s - 217ms/step - loss: 0.5602 - pr_auc: 0.3007 - roc_auc: 0.7817 - val_loss: 0.5472 - val_pr_auc: 0.3384 - val_roc_auc: 0.8062 - learning_rate: 0.0010
+Epoch 15/40
+232/232 - 53s - 228ms/step - loss: 0.5586 - pr_auc: 0.2963 - roc_auc: 0.7858 - val_loss: 0.5755 - val_pr_auc: 0.3416 - val_roc_auc: 0.8092 - learning_rate: 0.0010
+Epoch 16/40
+232/232 - 53s - 227ms/step - loss: 0.5475 - pr_auc: 0.3135 - roc_auc: 0.7932 - val_loss: 0.5582 - val_pr_auc: 0.3541 - val_roc_auc: 0.8189 - learning_rate: 0.0010
+Epoch 17/40
+232/232 - 50s - 218ms/step - loss: 0.5462 - pr_auc: 0.3124 - roc_auc: 0.7946 - val_loss: 0.5822 - val_pr_auc: 0.3615 - val_roc_auc: 0.8134 - learning_rate: 0.0010
+Epoch 18/40
+232/232 - 76254s - 329s/step - loss: 0.5476 - pr_auc: 0.3080 - roc_auc: 0.7923 - val_loss: 0.6054 - val_pr_auc: 0.3536 - val_roc_auc: 0.8115 - learning_rate: 0.0010
+Epoch 19/40
+232/232 - 53s - 231ms/step - loss: 0.5374 - pr_auc: 0.3270 - roc_auc: 0.8020 - val_loss: 0.5387 - val_pr_auc: 0.3647 - val_roc_auc: 0.8264 - learning_rate: 0.0010
+Epoch 20/40
+232/232 - 48s - 208ms/step - loss: 0.5349 - pr_auc: 0.3373 - roc_auc: 0.8069 - val_loss: 0.5510 - val_pr_auc: 0.3801 - val_roc_auc: 0.8276 - learning_rate: 0.0010
+Epoch 21/40
+232/232 - 48s - 207ms/step - loss: 0.5343 - pr_auc: 0.3368 - roc_auc: 0.8063 - val_loss: 0.5053 - val_pr_auc: 0.3749 - val_roc_auc: 0.8274 - learning_rate: 0.0010
+Epoch 22/40
+232/232 - 44s - 190ms/step - loss: 0.5231 - pr_auc: 0.3494 - roc_auc: 0.8153 - val_loss: 0.5649 - val_pr_auc: 0.3911 - val_roc_auc: 0.8344 - learning_rate: 0.0010
+Epoch 23/40
+232/232 - 53s - 230ms/step - loss: 0.5199 - pr_auc: 0.3558 - roc_auc: 0.8175 - val_loss: 0.4955 - val_pr_auc: 0.4013 - val_roc_auc: 0.8340 - learning_rate: 0.0010
+Epoch 24/40
+232/232 - 53s - 228ms/step - loss: 0.5144 - pr_auc: 0.3663 - roc_auc: 0.8223 - val_loss: 0.5138 - val_pr_auc: 0.3843 - val_roc_auc: 0.8313 - learning_rate: 0.0010
+Epoch 25/40
+232/232 - 49s - 211ms/step - loss: 0.5103 - pr_auc: 0.3747 - roc_auc: 0.8268 - val_loss: 0.4898 - val_pr_auc: 0.4036 - val_roc_auc: 0.8396 - learning_rate: 0.0010
+Epoch 26/40
+232/232 - 52s - 222ms/step - loss: 0.5028 - pr_auc: 0.3821 - roc_auc: 0.8316 - val_loss: 0.5317 - val_pr_auc: 0.4124 - val_roc_auc: 0.8337 - learning_rate: 0.0010
+Epoch 27/40
+232/232 - 48s - 207ms/step - loss: 0.5080 - pr_auc: 0.3806 - roc_auc: 0.8269 - val_loss: 0.5022 - val_pr_auc: 0.4054 - val_roc_auc: 0.8408 - learning_rate: 0.0010
+Epoch 28/40
+232/232 - 52s - 226ms/step - loss: 0.4949 - pr_auc: 0.3830 - roc_auc: 0.8363 - val_loss: 0.4971 - val_pr_auc: 0.4173 - val_roc_auc: 0.8413 - learning_rate: 0.0010
+Epoch 29/40
+232/232 - 59s - 253ms/step - loss: 0.4916 - pr_auc: 0.3918 - roc_auc: 0.8408 - val_loss: 0.3799 - val_pr_auc: 0.4326 - val_roc_auc: 0.8343 - learning_rate: 0.0010
+Epoch 30/40
+232/232 - 55s - 236ms/step - loss: 0.4877 - pr_auc: 0.4015 - roc_auc: 0.8435 - val_loss: 0.5107 - val_pr_auc: 0.4164 - val_roc_auc: 0.8396 - learning_rate: 0.0010
+Epoch 31/40
+232/232 - 52s - 226ms/step - loss: 0.4801 - pr_auc: 0.4190 - roc_auc: 0.8478 - val_loss: 0.4317 - val_pr_auc: 0.4258 - val_roc_auc: 0.8466 - learning_rate: 0.0010
+Epoch 32/40
+232/232 - 51s - 220ms/step - loss: 0.4788 - pr_auc: 0.4150 - roc_auc: 0.8509 - val_loss: 0.4059 - val_pr_auc: 0.4367 - val_roc_auc: 0.8457 - learning_rate: 0.0010
+Epoch 33/40
+232/232 - 52s - 223ms/step - loss: 0.4755 - pr_auc: 0.4212 - roc_auc: 0.8534 - val_loss: 0.4180 - val_pr_auc: 0.4388 - val_roc_auc: 0.8401 - learning_rate: 0.0010
+Epoch 34/40
+232/232 - 56s - 240ms/step - loss: 0.4731 - pr_auc: 0.4248 - roc_auc: 0.8547 - val_loss: 0.4444 - val_pr_auc: 0.4415 - val_roc_auc: 0.8502 - learning_rate: 0.0010
+Epoch 35/40
+232/232 - 52s - 225ms/step - loss: 0.4721 - pr_auc: 0.4177 - roc_auc: 0.8532 - val_loss: 0.4657 - val_pr_auc: 0.4347 - val_roc_auc: 0.8504 - learning_rate: 0.0010
+Epoch 36/40
+232/232 - 61s - 262ms/step - loss: 0.4626 - pr_auc: 0.4300 - roc_auc: 0.8595 - val_loss: 0.4065 - val_pr_auc: 0.4435 - val_roc_auc: 0.8486 - learning_rate: 0.0010
+Epoch 37/40
+232/232 - 55s - 235ms/step - loss: 0.4624 - pr_auc: 0.4392 - roc_auc: 0.8618 - val_loss: 0.4600 - val_pr_auc: 0.4389 - val_roc_auc: 0.8435 - learning_rate: 0.0010
+Epoch 38/40
+232/232 - 52s - 225ms/step - loss: 0.4567 - pr_auc: 0.4406 - roc_auc: 0.8641 - val_loss: 0.4096 - val_pr_auc: 0.4378 - val_roc_auc: 0.8452 - learning_rate: 0.0010
+Epoch 39/40
+232/232 - 55s - 237ms/step - loss: 0.4507 - pr_auc: 0.4492 - roc_auc: 0.8695 - val_loss: 0.4074 - val_pr_auc: 0.4287 - val_roc_auc: 0.8419 - learning_rate: 0.0010
+Epoch 40/40
+232/232 - 52s - 223ms/step - loss: 0.4347 - pr_auc: 0.4697 - roc_auc: 0.8774 - val_loss: 0.3613 - val_pr_auc: 0.4464 - val_roc_auc: 0.8490 - learning_rate: 5.0000e-04
+
+cnn@seed1: PR-AUC 0.448  ROC-AUC 0.849  F1 0.495  P 0.478  R 0.513  FPR 0.052  best epoch 40/40  (78297.9s)

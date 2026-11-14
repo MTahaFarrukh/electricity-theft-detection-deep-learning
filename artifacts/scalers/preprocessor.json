@@ -1,0 +1,9 @@
+{
+  "config": {
+    "cap_percentile": 99.9,
+    "max_interp_gap": 7
+  },
+  "cap_value": 365.0,
+  "mean": 1.580383961512914,
+  "std": 1.1195757799378634
+}
