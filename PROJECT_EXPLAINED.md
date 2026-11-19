@@ -12,17 +12,18 @@
 3. [The Core Idea: What Does Our AI Actually Do?](#3-the-core-idea-what-does-our-ai-actually-do)
 4. [The Dataset: What Raw Data Do We Have?](#4-the-dataset-what-raw-data-do-we-have)
 5. [Data Cleaning: Why Raw Data is a Mess (And How We Fix It)](#5-data-cleaning-why-raw-data-is-a-mess-and-how-we-fix-it)
-6. [The "Needle in a Haystack" Problem: Why 90% Accuracy is Useless](#6-the-needle-in-a-haystack-problem-why-90-accuracy-is-useless)
-7. [The 5 AI Models Detailed & Compared with Real-World Analogies](#7-the-5-ai-models-detailed--compared-with-real-world-analogies)
-8. [The Confusion Matrix Explained in Everyday Human Terms](#8-the-confusion-matrix-explained-in-everyday-human-terms)
-9. [The Decision Threshold (0.764): The Alarm Sensitivity Dial](#9-the-decision-threshold-0764-the-alarm-sensitivity-dial)
-10. [The Scoreboard: Final Results & Comparison](#10-the-scoreboard-final-results--comparison)
-11. [System Architecture: How Backend, Database & Frontend Connect](#11-system-architecture-how-backend-database--frontend-connect)
-12. [Tour of Every Tab & Feature in the App (What Does Each Screen Do?)](#12-tour-of-every-tab--feature-in-the-app-what-does-each-screen-do)
-13. [Step-by-Step Project Demo Flow (How to Present in Viva)](#13-step-by-step-project-demo-flow-how-to-present-in-viva)
-14. [Cloud Deployment (Render + Vercel)](#14-cloud-deployment-render--vercel)
-15. [Limitations & Ethical Boundaries (What the System CANNOT Do)](#15-limitations--ethical-boundaries-what-the-system-cannot-do)
-16. [Top Viva / Interview Questions & Crystal-Clear Answers](#16-top-viva--interview-questions--crystal-clear-answers)
+6. [Exploratory Data Analysis (EDA): The Detective Work on Raw Data](#6-exploratory-data-analysis-eda-the-detective-work-on-raw-data)
+7. [The "Needle in a Haystack" Problem: Why 90% Accuracy is Useless](#7-the-needle-in-a-haystack-problem-why-90-accuracy-is-useless)
+8. [The 5 AI Models Detailed & Compared with Real-World Analogies](#8-the-5-ai-models-detailed--compared-with-real-world-analogies)
+9. [The Confusion Matrix Explained in Everyday Human Terms](#9-the-confusion-matrix-explained-in-everyday-human-terms)
+10. [The Decision Threshold (0.764): The Alarm Sensitivity Dial](#10-the-decision-threshold-0764-the-alarm-sensitivity-dial)
+11. [The Scoreboard: Final Results & Comparison](#11-the-scoreboard-final-results--comparison)
+12. [System Architecture: How Backend, Database & Frontend Connect](#12-system-architecture-how-backend-database--frontend-connect)
+13. [Tour of Every Tab & Feature in the App (What Does Each Screen Do?)](#13-tour-of-every-tab--feature-in-the-app-what-does-each-screen-do)
+14. [Step-by-Step Project Demo Flow (How to Present in Viva)](#14-step-by-step-project-demo-flow-how-to-present-in-viva)
+15. [Cloud Deployment (Render + Vercel)](#15-cloud-deployment-render--vercel)
+16. [Limitations & Ethical Boundaries (What the System CANNOT Do)](#16-limitations--ethical-boundaries-what-the-system-cannot-do)
+17. [Top Viva / Interview Questions & Crystal-Clear Answers](#17-top-viva--interview-questions--crystal-clear-answers)
 
 ---
 
@@ -152,7 +153,77 @@ If you calculate the average or maximum using the whole dataset, your AI gets an
 
 ---
 
-## 6. The "Needle in a Haystack" Problem: Why 90% Accuracy is Useless
+## 6. Exploratory Data Analysis (EDA): The Detective Work on Raw Data
+
+Before writing a single line of neural network code, a data scientist must put on a **detective hat**.  
+**EDA (Exploratory Data Analysis)** is the stage where we plot charts, calculate distributions, and uncover the hidden secrets of the dataset.
+
+Code: `scripts/eda.py` · Figures: `reports/figures/` · Summary: `reports/results/eda_summary.md`
+
+### 🔒 The Ironclad Rule: EDA on Training Data ONLY!
+EDA was conducted **strictly on the 29,657 training customers (70%)**. The 6,355 validation and 6,355 test customers were **completely hidden and untouched**.  
+If an engineer explores test data, their human brain will unconsciously tune model parameters to match the test set — which is an insidious form of data leakage. We maintained 100% academic rigor.
+
+---
+
+### 📊 Normal vs. Theft: The Tale of Two Customers
+
+Here is what the data revealed when we compared honest customers against electricity thieves across 1,035 days:
+
+| Feature / Statistic | Normal Customers | Theft Customers | Comparison / Ratio |
+|---|:---:|:---:|:---:|
+| **Mean Daily Consumption** | 5.47 kWh/day | **8.82 kWh/day** | **Theft uses 1.61× MORE power!** |
+| **Median Daily Consumption** | 4.61 kWh/day | **7.07 kWh/day** | Theft is 1.53× higher |
+| **Daily Volatility (Std Dev)** | 3.12 kWh | **6.10 kWh** | **Theft is almost 2× more volatile!** |
+| **Coefficient of Variation** | 0.585 | **0.709** | Theft shows erratic wild swings |
+| **Median Missing Reading Rate** | 9.7% | **21.0%** | **Theft has 2.17× MORE missing data!** |
+| **Zero Reading Fraction** | 0.7% | 0.5% | Thieves rarely show zero usage |
+
+---
+
+### 🖼️ The 7 Key Visual Discoveries (Generated in `reports/figures/`)
+
+Our EDA script generated 7 dedicated forensic charts:
+
+1. **`eda_class_balance.png` — The Extreme Asymmetry:**
+   - Shows the stark visual reality: **91.5% Normal vs. 8.5% Theft**.
+   - Proved that standard loss functions would fail and directly motivated **class weighting** ($w_1 = 5.87$).
+2. **`eda_customer_mean.png` — The Consumption Paradox:**
+   - Distribution histogram showing that theft-labeled customers are shifted towards **higher** daily consumption.
+   - Proved that naive threshold rules like *"flag anyone using less than 1 kWh"* are completely useless.
+3. **`eda_consumption_over_time.png` — The Seasonal Wave:**
+   - Plots the average daily grid consumption across the entire 3 years (2014 to 2016).
+   - Revealed massive seasonal waves (summer peaks from air conditioning, winter spikes from heating).
+4. **`eda_customer_missing.png` — The Telemetry Footprint:**
+   - A distribution curve showing how many days of data were missing per customer.
+   - Theft customers had a long tail of missing readings (2.2× higher median).
+5. **`eda_missing_over_time.png` — The Grid Evolution & The Glitch Day:**
+   - Timeline of data completeness: in 2014–2015, the Chinese smart-meter infrastructure was still being rolled out, so 35%–43% of readings were missing. From January 2016 onwards, the grid matured and missing data dropped to < 4%!
+   - **Exposed the famous Glitch Day:** On **2014-10-03**, ~99% of all meters in the entire grid went dark simultaneously due to a regional server outage!
+6. **`eda_weekly_profile.png` — The Saturday/Sunday Bump:**
+   - Visual bar chart comparing consumption from Monday through Sunday.
+   - Weekend consumption is **1% to 2% higher** than weekdays for both normal and theft groups.
+   - **This directly shaped our CNN architecture:** We chose a **kernel size of 7 (`k=7`)** in the first convolutional layer so each filter spans exactly one natural 7-day weekly cycle!
+7. **`eda_example_customers.png` — The Visual Smoking Gun:**
+   - Plots actual individual customers over 1,035 days side-by-side.
+   - An honest customer shows smooth, predictable seasonal waves.
+   - A theft customer shows a healthy consumption curve for months, followed by a **dramatic cliff drop** (bypass installed) or periodic block dropouts.
+
+---
+
+### 💡 The 5 Big Takeaways That Shaped Our AI Architecture
+
+| Discovery from EDA | Why it Matters | How it Shaped Our System |
+|---|---|---|
+| **1. Thieves consume more** | Theft isn't low usage; it's high consumers hiding portions of their usage. | Models must look for **relative drops and volatility**, not absolute low values. |
+| **2. Missingness has label signal** | Physical tampering disrupts digital transmission hardware. | We created a **2-channel input** (Channel 0 = Consumption, Channel 1 = Missingness Mask). |
+| **3. 7-Day Weekly Cycle** | Human behavior follows a strict Monday-Sunday rhythm. | First 1D-CNN layer kernel set to **`k=7`** to slide over 1 natural week at a time. |
+| **4. Calendar Gaps & Glitches** | 2016-09-18 was absent; 2014-10-03 was 99% missing. | Preprocessing pipeline safely re-indexes and interpolates short calendar gaps. |
+| **5. Label Noise Exists** | Some "normal" customers had 0 kWh every single day for 3 years. | Acknowledged in our limitations: ground-truth labels come from human inspections and can be imperfect. |
+
+---
+
+## 7. The "Needle in a Haystack" Problem: Why 90% Accuracy is Useless
 
 This is the **most important concept** to understand for any viva or technical discussion!
 
@@ -177,7 +248,7 @@ It gets an A+ grade in basic accuracy, but in the real world it is **100% useles
 
 ---
 
-## 7. The 5 AI Models Detailed & Compared with Real-World Analogies
+## 8. The 5 AI Models Detailed & Compared with Real-World Analogies
 
 We implemented and rigorously benchmarked **5 distinct models** to find the absolute best approach:
 
@@ -233,7 +304,7 @@ We implemented and rigorously benchmarked **5 distinct models** to find the abso
 
 ---
 
-## 8. The Confusion Matrix Explained in Everyday Human Terms
+## 9. The Confusion Matrix Explained in Everyday Human Terms
 
 When our deployed CNN-LSTM model was tested on **6,355 brand new, unseen test customers**, here was the exact breakdown:
 
@@ -278,7 +349,7 @@ $$\text{Hit Rate} = \frac{271}{578} = \mathbf{46.9\%}$$
 
 ---
 
-## 9. The Decision Threshold (0.764): The Alarm Sensitivity Dial
+## 10. The Decision Threshold (0.764): The Alarm Sensitivity Dial
 
 The AI outputs a continuous probability between `0.000` and `1.000`.  
 At what number should we ring the red siren?
@@ -294,7 +365,7 @@ $$\mathbf{\text{Threshold} = 0.764}$$
 
 ---
 
-## 10. The Scoreboard: Final Results & Comparison
+## 11. The Scoreboard: Final Results & Comparison
 
 On the held-out test set (6,355 customers):
 
@@ -309,7 +380,7 @@ On the held-out test set (6,355 customers):
 
 ---
 
-## 11. System Architecture: How Backend, Database & Frontend Connect
+## 12. System Architecture: How Backend, Database & Frontend Connect
 
 ```mermaid
 flowchart TD
@@ -346,7 +417,7 @@ flowchart TD
 
 ---
 
-## 12. Tour of Every Tab & Feature in the App (What Does Each Screen Do?)
+## 13. Tour of Every Tab & Feature in the App (What Does Each Screen Do?)
 
 Our application is divided into **6 main tabs/pages**, each built for a specific role in a utility company:
 
@@ -417,7 +488,7 @@ The scientific transparency page for technical evaluators and examiners:
 
 ---
 
-## 13. Step-by-Step Project Demo Flow (How to Present in Viva)
+## 14. Step-by-Step Project Demo Flow (How to Present in Viva)
 
 When presenting this project to a professor, examiner, or client, follow this **foolproof 5-minute demo script**:
 
@@ -465,7 +536,7 @@ sequenceDiagram
 
 ---
 
-## 14. Cloud Deployment (Render + Vercel)
+## 15. Cloud Deployment (Render + Vercel)
 
 The system is configured for cloud hosting:
 
@@ -475,7 +546,7 @@ The system is configured for cloud hosting:
 
 ---
 
-## 15. Limitations & Ethical Boundaries (What the System CANNOT Do)
+## 16. Limitations & Ethical Boundaries (What the System CANNOT Do)
 
 We maintain strict academic and ethical honesty about the project's boundaries:
 
@@ -486,7 +557,7 @@ We maintain strict academic and ethical honesty about the project's boundaries:
 
 ---
 
-## 16. Top Viva / Interview Questions & Crystal-Clear Answers
+## 17. Top Viva / Interview Questions & Crystal-Clear Answers
 
 #### Q1: "Why did you choose CNN-LSTM instead of just using a standard CNN or LSTM?"
 > **Answer:**  
@@ -527,6 +598,17 @@ We maintain strict academic and ethical honesty about the project's boundaries:
 #### Q6: "How does the system operate in production?"
 > **Answer:**  
 > "Offline, the model is trained and its validated weights and threshold metadata are exported. Online, a lightweight **FastAPI backend** loads the model into memory. When new readings arrive via REST API, the predictor normalizes the sequence, runs inference in milliseconds, logs the result in an **SQLite database**, and raises an **Alert** if the risk score exceeds 0.764. The utility staff interacts with this through an installable **React PWA dashboard**."
+
+---
+
+#### Q7: "What did you discover during Exploratory Data Analysis (EDA), and how did it directly influence your model architecture?"
+> **Answer:**  
+> "Our EDA on the training split revealed five critical insights that directly determined our design:  
+> 1. **Theft customers consume more, not less (8.8 vs 5.5 kWh/day):** Showing theft isn't simple zero-usage, but sudden relative drops and volatility from heavy consumers.  
+> 2. **Missing data is 2.2× higher in theft cases (21% vs 10%):** Tampering damages meter telemetry, which directly motivated our **2-channel input** (readings + missingness mask).  
+> 3. **Weekend consumption is 1–2% higher than weekdays:** Revealing a weekly cycle, which directly inspired our **7-day kernel size (`k=7`)** in the first 1D-CNN layer.  
+> 4. **Grid anomalies:** 2014-10-03 was 99% missing (grid outage) and 2016-09-18 was missing entirely, which our preprocessing pipeline properly handles.  
+> 5. **Anti-Leakage Isolation:** We strictly ran EDA on the 70% training split only, keeping validation and test data completely untouched."
 
 ---
 
