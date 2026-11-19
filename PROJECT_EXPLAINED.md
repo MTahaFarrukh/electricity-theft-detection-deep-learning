@@ -5,29 +5,24 @@
 
 ---
 
-## 📑 Quick Navigation
+## 📑 Table of Contents
 
 1. [The Real-World Story: Why Does This Project Exist?](#1-the-real-world-story-why-does-this-project-exist)
 2. [How Do People Steal Electricity? (And Why Simple Rules Fail)](#2-how-do-people-steal-electricity-and-why-simple-rules-fail)
 3. [The Core Idea: What Does Our AI Actually Do?](#3-the-core-idea-what-does-our-ai-actually-do)
 4. [The Dataset: What Raw Data Do We Have?](#4-the-dataset-what-raw-data-do-we-have)
 5. [Data Cleaning: Why Raw Data is a Mess (And How We Fix It)](#5-data-cleaning-why-raw-data-is-a-mess-and-how-we-fix-it)
-6. [The "Needle in a Haystack" Problem: Why 90% Accuracy is Actually Useless](#6-the-needle-in-a-haystack-problem-why-90-accuracy-is-actually-useless)
-7. [The AI Models Explained with Simple Analogies](#7-the-ai-models-explained-with-simple-analogies)
-   - [Baseline Models (The Simple Calculators)](#baseline-models-the-simple-calculators)
-   - [1D-CNN (The Magnifying Glass / Pattern Spotter)](#1d-cnn-the-magnifying-glass--pattern-spotter)
-   - [LSTM (The Long-Term Memory Keeper)](#lstm-the-long-term-memory-keeper)
-   - [CNN-LSTM (The Hybrid Master Detective)](#cnn-lstm-the-hybrid-master-detective)
-8. [The Decision Threshold (0.764): The Alarm Sensitivity Dial](#8-the-decision-threshold-0764-the-alarm-sensitivity-dial)
-9. [The Results: How Well Does It Actually Work?](#9-the-results-how-well-does-it-actually-work)
-10. [The Full System Architecture (How the Pieces Fit Together)](#10-the-full-system-architecture-how-the-pieces-fit-together)
-11. [The Frontend Dashboard & Interactive Features](#11-the-frontend-dashboard--interactive-features)
-    - [Live Simulated Monitoring (One-Click Inspection)](#live-simulated-monitoring-one-click-inspection)
-    - [The "Test Model" Playground](#the-test-model-playground)
-    - [Progressive Web App (PWA)](#progressive-web-app-pwa)
-12. [Cloud Deployment (Render + Vercel)](#12-cloud-deployment-render--vercel)
-13. [Limitations & Ethical Rules (What the System CANNOT Do)](#13-limitations--ethical-rules-what-the-system-cannot-do)
-14. [Top Viva / Interview Questions & Crystal-Clear Answers](#14-top-viva--interview-questions--crystal-clear-answers)
+6. [The "Needle in a Haystack" Problem: Why 90% Accuracy is Useless](#6-the-needle-in-a-haystack-problem-why-90-accuracy-is-useless)
+7. [The 5 AI Models Detailed & Compared with Real-World Analogies](#7-the-5-ai-models-detailed--compared-with-real-world-analogies)
+8. [The Confusion Matrix Explained in Everyday Human Terms](#8-the-confusion-matrix-explained-in-everyday-human-terms)
+9. [The Decision Threshold (0.764): The Alarm Sensitivity Dial](#9-the-decision-threshold-0764-the-alarm-sensitivity-dial)
+10. [The Scoreboard: Final Results & Comparison](#10-the-scoreboard-final-results--comparison)
+11. [System Architecture: How Backend, Database & Frontend Connect](#11-system-architecture-how-backend-database--frontend-connect)
+12. [Tour of Every Tab & Feature in the App (What Does Each Screen Do?)](#12-tour-of-every-tab--feature-in-the-app-what-does-each-screen-do)
+13. [Step-by-Step Project Demo Flow (How to Present in Viva)](#13-step-by-step-project-demo-flow-how-to-present-in-viva)
+14. [Cloud Deployment (Render + Vercel)](#14-cloud-deployment-render--vercel)
+15. [Limitations & Ethical Boundaries (What the System CANNOT Do)](#15-limitations--ethical-boundaries-what-the-system-cannot-do)
+16. [Top Viva / Interview Questions & Crystal-Clear Answers](#16-top-viva--interview-questions--crystal-clear-answers)
 
 ---
 
@@ -55,20 +50,20 @@ Instead of guessing, our **AI system looks at daily meter readings** and gives e
 - Suspicious meters get scores like `85%` or `94%`.
 
 Now, the utility company gives inspectors a **prioritized list**:  
-*"Don't guess. Go inspect these 20 meters with a 90%+ risk score today."*
+*"Don't guess blindly. Go inspect these 20 meters with a 90%+ risk score today."*
 
 ---
 
 ## 2. How Do People Steal Electricity? (And Why Simple Rules Fail)
 
-You might think: *"Can't we just look for meters showing 0 electricity?"*
+You might think: *"Can't we just write a simple `if` statement to look for meters showing 0 electricity?"*
 
-**No! Electricity theft is much smarter than that:**
+**No! Real-world electricity theft is much smarter and trickier than that:**
 
-1. **The Partial Bypass (Kunda / Shunt):**  
-   The thief runs their air conditioner or heavy machinery directly off the main wire, while running light bulbs through the meter. The meter still records 5–10 units a day so nobody suspects a thing!
+1. **The Partial Bypass (Kunda / Shunt Wire):**  
+   The thief runs heavy appliances (air conditioners, heavy machinery) directly off the main electrical wire outside the meter, while running low-power lights through the meter. The meter still ticks 5 to 10 units a day — so simple "zero-check" rules never catch them!
 2. **The Sudden Drop:**  
-   A factory was legitimately consuming 100 units a day for 2 years. Suddenly in year 3, consumption drops to 20 units a day without explanation.
+   A business was legitimately consuming 100 units a day for 2 years. Suddenly in year 3, consumption drops to 20 units a day without explanation (they installed a bypass).
 3. **The Tampering Glitch (Missing Readings):**  
    Someone physically tampers with the digital meter using magnets or frequency jammers. As a result, the meter stops recording or fails to transmit readings for several days or weeks at a time.
 4. **Reverse / Slowed Metering:**  
@@ -140,7 +135,7 @@ Here is how our pipeline cleans it step-by-step:
 
 ```mermaid
 flowchart TD
-    A["Raw Spreadsheet\n(Messy dates, missing values, extreme outliers)"] --> B["1. Sort Chronologically\n(Fix date string bug & insert missing day)"]
+    A["Raw Spreadsheet\n(Messy dates, missing values, extreme outliers)"] --> B["1. Sort Chronologically\n(Fix date string bug & insert missing 2016-09-18)"]
     B --> C["2. Remove Ghost Rows\n(5 customers with literally 0 readings dropped)"]
     C --> D["3. Split Customers FIRST\n(70% Train, 15% Validation, 15% Test)"]
     D --> E["4. Cap Crazy Outliers\n(e.g., 800,000 kWh sensor glitch capped at 365 kWh)"]
@@ -157,7 +152,7 @@ If you calculate the average or maximum using the whole dataset, your AI gets an
 
 ---
 
-## 6. The "Needle in a Haystack" Problem: Why 90% Accuracy is Actually Useless
+## 6. The "Needle in a Haystack" Problem: Why 90% Accuracy is Useless
 
 This is the **most important concept** to understand for any viva or technical discussion!
 
@@ -182,187 +177,316 @@ It gets an A+ grade in basic accuracy, but in the real world it is **100% useles
 
 ---
 
-## 7. The AI Models Explained with Simple Analogies
+## 7. The 5 AI Models Detailed & Compared with Real-World Analogies
 
-We built and tested **5 different models** to see which one performs best:
+We implemented and rigorously benchmarked **5 distinct models** to find the absolute best approach:
 
-### 1. Baseline Models (The Simple Calculators)
-- **Logistic Regression & Random Forest:**  
-  These don't look at the raw 1,035-day curve directly. Instead, we calculate 56 summary statistics for each customer (e.g., their minimum, maximum, standard deviation, average Monday usage).  
-  *Result:* Decent, but they miss intricate sequence patterns over time. Random Forest achieved PR-AUC `0.394`.
-
----
-
-### 2. 1D-CNN (The Magnifying Glass / Pattern Spotter)
-- **What is it?** A 1D Convolutional Neural Network.
-- **The Analogy:** Imagine holding a magnifying glass that looks at **7 days at a time** (one week). You slide that magnifying glass across the 3-year timeline day by day.
-- **What it's good at:** Spotting local, sharp changes — like *"their consumption was high on Monday through Friday, but suddenly dropped to 0 on Saturday and stayed low."*
-- *Result:* Very strong! PR-AUC `0.459`.
-
----
-
-### 3. LSTM (The Long-Term Memory Keeper)
-- **What is it?** Long Short-Term Memory (a type of Recurrent Neural Network).
-- **The Analogy:** Imagine a detective reading a customer's electricity diary page by page. The detective has a memory notebook and keeps track of long-term trends: *"Two years ago in summer they used 30 units/day; last summer they used 32 units/day; but this summer they only used 4 units/day!"*
-- **What it's good at:** Long-term seasonal memory and history.
-- **The Weakness:** Without a magnifying glass, it gets confused by daily noise.
-- *Result:* Standalone LSTM struggled on raw data — PR-AUC `0.337`.
-
----
-
-### 4. CNN-LSTM (The Hybrid Master Detective) — ⭐ OUR DEPLOYED MODEL
-- **Why not combine both?**
-- **The Analogy:**  
-  - The **CNN acts as the eyes**: It slides over the daily data, filters out noise, and extracts key features (reducing 1,035 daily points into 129 compact weekly pattern summaries).
-  - The **LSTM acts as the brain**: It takes those extracted patterns from the CNN and tracks how they evolve over the 3 years!
-
-```mermaid
-flowchart LR
-    A["Raw Daily Data\n(1,035 days)"] --> B["CNN Layers\n(Filter noise & spot daily anomalies)"]
-    B --> C["LSTM Layers\n(Track seasonal trends & timeline changes)"]
-    C --> D["Dense Decision Layer\n(Outputs Risk Score: 0.0 to 1.0)"]
+```
+┌────────────────────────────────────────────────────────────────────────┐
+│                        MODEL LEADERBOARD                               │
+├───────────────────────────────┬──────────────┬─────────────┬───────────┤
+│ Model                         │ Architecture │ PR-AUC      │ Recall    │
+├───────────────────────────────┼──────────────┼─────────────┼───────────┤
+│ 1. Missingness-Only Baseline  │ Heuristic    │ 0.180       │ 36.5%     │
+│ 2. Logistic Regression        │ Classical ML │ 0.284       │ 38.2%     │
+│ 3. Random Forest              │ Classical ML │ 0.394       │ 39.1%     │
+│ 4. Standalone 1D-CNN          │ Deep Learning│ 0.459       │ 48.8%     │
+│ 5. Standalone LSTM            │ Deep Learning│ 0.337       │ 39.5%     │
+│ ⭐ 6. CNN-LSTM (HYBRID)        │ Deep Learning│ 0.487 (WIN) │ 51.6%     │
+└───────────────────────────────┴──────────────┴─────────────┴───────────┘
 ```
 
-- **The Result:** The **CNN-LSTM is the overall champion**. It achieved the highest PR-AUC (**0.487**) and highest Recall (**51.6%**).
+### 1. Missingness-Only Baseline (The Simple Sanity Check)
+- **Concept:** It only looks at *how many readings are missing*.
+- **Why we built it:** To prove that our deep learning models aren't just learning "missing data = theft". It achieved PR-AUC `0.180`. Any good model MUST beat this to prove it is learning actual electrical consumption patterns!
+
+### 2. Logistic Regression (The Straight-Line Boundary)
+- **Concept:** A classical statistical method.
+- **How it works:** It takes 56 calculated numbers per customer (like overall average, variance, Monday average) and draws a straight mathematical decision line.
+- **Result:** PR-AUC `0.284`. Decent baseline, but cannot capture complex, non-linear relationships.
+
+### 3. Random Forest (The Council of 400 Trees)
+- **Concept:** An ensemble of 400 decision trees.
+- **How it works:** Each tree looks at different statistical features and votes "Normal" or "Theft". The majority vote wins.
+- **Result:** PR-AUC `0.394`. Strongest classical baseline! Its top features were `max consumption`, `monthly variation`, and `trend slope`. But it still cannot "see" the exact day-by-day sequence.
+
+### 4. 1D-CNN (The Magnifying Glass / Local Pattern Spotter)
+- **Concept:** 1-Dimensional Convolutional Neural Network (3 Conv layers with filter kernels of size 7, 5, 3).
+- **The Analogy:** Holding a magnifying glass that looks at **7 days at a time** (1 week). You slide it across the 1,035 days.
+- **What it does well:** Spotting sharp weekly anomalies (e.g., normal Monday–Friday usage, but 0 usage every Saturday/Sunday).
+- **The Weakness:** It pools features globally at the end, so it loses the sense of chronological order across the 3 years.
+- **Result:** Very strong PR-AUC `0.459`.
+
+### 5. Standalone LSTM (The Long-Term Diary Reader)
+- **Concept:** Long Short-Term Memory (Recurrent Neural Network).
+- **The Analogy:** A detective reading a meter's diary day-by-day with a memory notepad, tracking how usage shifts from 2014 to 2016.
+- **The Weakness:** When fed 1,035 raw daily numbers directly, it suffers from noise and memory overload.
+- **Result:** Underperformed (PR-AUC `0.337`), proving recurrent nets alone struggle without feature extraction.
+
+### ⭐ 6. CNN-LSTM (The Hybrid Master Detective) — DEPLOYED CHAMPION
+- **The Core Innovation:** Combine the magnifying glass of the CNN with the memory notepad of the LSTM!
+- **How it works:**
+  1. **CNN Layers (The Eyes):** 3 convolutional blocks scan the 1,035 days, filter out sensor noise, and compress the sequence **8×** (down to 129 weekly feature vectors).
+  2. **LSTM Layers (The Brain):** Takes those 129 clean feature vectors and analyzes how the pattern evolved over the entire 3-year timeline.
+  3. **Dense Layers (The Judge):** Outputs the final Risk Score (0.0 to 1.0).
+- **Result:** **Highest PR-AUC (0.487)**, **Highest Recall (51.6%)**, and balanced FPR (5.3%).
 
 ---
 
-## 8. The Decision Threshold (0.764): The Alarm Sensitivity Dial
+## 8. The Confusion Matrix Explained in Everyday Human Terms
 
-The model outputs a decimal probability score between `0.000` and `1.000`.  
-At what score should the system trigger a red siren **"SUSPICIOUS"**?
+When our deployed CNN-LSTM model was tested on **6,355 brand new, unseen test customers**, here was the exact breakdown:
 
-- If you set the alarm trigger at `0.10`: Every tiny fluctuation rings the alarm. Inspectors get overwhelmed with innocent people.
-- If you set the alarm trigger at `0.99`: The alarm almost never rings. You miss most thieves.
+```
+                              AI PREDICTION
+                     ┌───────────────┬───────────────┐
+                     │    NORMAL     │  SUSPICIOUS   │
+       ┌─────────────┼───────────────┼───────────────┤
+       │   NORMAL    │     5,506     │      307      │  Total Normal = 5,813
+ACTUAL │ (Innocent)  │ (True Neg TN) │(False Pos FP) │
+       ├─────────────┼───────────────┼───────────────┤
+       │    THEFT    │      271      │      271      │  Total Thieves = 542
+       │  (Criminal) │(False Neg FN) │ (True Pos TP) │
+       └─────────────┴───────────────┴───────────────┘
+```
 
-By testing different cut-offs on our **validation set**, we found the mathematical sweet spot:  
-$$\text{Threshold} = \mathbf{0.764}$$
+Let's break down each box in plain human terms:
 
-- **Score < 0.764:** Marked **NORMAL** (No alarm).
-- **Score ≥ 0.764:** Marked **SUSPICIOUS** (🚨 Automatic alert created in the system).
+### 1. True Negatives (TN = 5,506) ✅
+- **What happened:** Customer was honest, AI predicted **NORMAL**.
+- **Real-world result:** 5,506 innocent families are left completely undisturbed. No unnecessary inspectors sent to their homes.
+
+### 2. True Positives (TP = 271) 🎯
+- **What happened:** Customer was stealing electricity, AI predicted **SUSPICIOUS**.
+- **Real-world result:** 271 electricity thieves are successfully caught! The utility company recovers stolen revenue.
+
+### 3. False Positives (FP = 307) ⚠️
+- **What happened:** Customer was honest, but AI raised a **SUSPICIOUS** alarm.
+- **Why this happened:** These customers had unusual consumption patterns (e.g., renovated their house, went on vacation for 2 months, or had a broken meter sensor).
+- **Real-world result:** An inspector visits, checks the meter, finds no bypass, and marks the alert `DISMISSED` in our dashboard. Because our False Positive Rate is only **5.3%**, utility companies can easily manage this small number of false alarms.
+
+### 4. False Negatives (FN = 271) ❌
+- **What happened:** Customer was stealing, but AI marked them **NORMAL**.
+- **Why this happened:** Very sneaky thieves who steal small amounts (e.g., 10% bypass), blending in with normal household variations.
+
+### 💡 Why this is a Massive 6× Victory:
+In a city of 6,355 customers, only 542 are stealing (1 out of every 12).  
+If an inspector knocked on doors randomly, **only 8.5%** of inspections would find theft.  
+With our CNN-LSTM system, the inspector visits **578 flagged meters** (271 + 307).  
+$$\text{Hit Rate} = \frac{271}{578} = \mathbf{46.9\%}$$
+**Almost 1 out of every 2 inspections is a confirmed thief!** That is a **6× improvement in inspection efficiency**!
 
 ---
 
-## 9. The Results: How Well Does It Actually Work?
+## 9. The Decision Threshold (0.764): The Alarm Sensitivity Dial
 
-Here is the final scoreboard on **6,355 brand new, unseen test customers**:
+The AI outputs a continuous probability between `0.000` and `1.000`.  
+At what number should we ring the red siren?
 
-| Model Type | Architecture | Test PR-AUC (Higher is better) | Caught Thieves (Recall) | False Alarm Rate (FPR) |
-|---|---|:---:|:---:|:---:|
-| Simple Baseline | Missingness-only | 0.180 | 36.5% | 16.5% |
-| Classical ML | Logistic Regression | 0.284 | 38.2% | 9.4% |
-| Classical ML | Random Forest | 0.394 | 39.1% | 5.2% |
-| Deep Learning | 1D-CNN | 0.459 | 48.8% | 6.0% |
-| Deep Learning | Standalone LSTM | 0.337 | 39.5% | 7.3% |
-| **Hybrid Deep Learning** | **CNN-LSTM (Our Model)** ⭐ | **0.487** | **50.0% – 51.6%** | **5.3%** |
+- If threshold is `0.10`: Alarm rings for almost everyone. Inspectors get 3,000 false alarms.
+- If threshold is `0.99`: Alarm almost never rings. We catch almost no thieves.
 
-### The Real-World Impact:
-- **6× Precision Boost:** If an inspector randomly checked homes, only **1 out of 12** homes would be stealing electricity. With our CNN-LSTM system, **1 out of every 2 flagged homes** is an actual confirmed thief!
-- **Half of all thieves caught:** We catch over 50% of thieves while only disturbing 5% of innocent customers.
+By plotting the Precision-Recall curve on our **validation set**, we found the optimal balance point:
+$$\mathbf{\text{Threshold} = 0.764}$$
+
+- **Score < 0.764:** Classification = `NORMAL` (Green badge, no alert).
+- **Score ≥ 0.764:** Classification = `SUSPICIOUS` (Red badge, automatic alert generated).
 
 ---
 
-## 10. The Full System Architecture (How the Pieces Fit Together)
+## 10. The Scoreboard: Final Results & Comparison
 
-A machine learning model sitting in a Jupyter Notebook is useless to a utility company. We turned it into a **complete, production-ready software application**:
+On the held-out test set (6,355 customers):
+
+| Model | Accuracy | Precision | Recall (Caught Thieves) | F1-Score | PR-AUC (Key Metric) | ROC-AUC | False Positive Rate |
+|---|:---:|:---:|:---:|:---:|:---:|:---:|:---:|
+| Missingness Baseline | 79.5% | 17.1% | 36.5% | 0.233 | 0.180 | 0.677 | 16.5% |
+| Logistic Regression | 86.1% | 27.4% | 38.2% | 0.319 | 0.284 | 0.774 | 9.4% |
+| Random Forest | 90.0% | 41.1% | 39.1% | 0.401 | 0.394 | 0.828 | 5.2% |
+| 1D-CNN (3 seeds) | 90.1% | 43.2% | 48.8% | 0.458 | 0.459 | **0.847** | 6.0% |
+| Standalone LSTM | 88.2% | 33.5% | 39.5% | 0.362 | 0.337 | 0.795 | 7.3% |
+| **CNN-LSTM (Our Model)** ⭐ | **90.9%** | **46.9%** | **50.0% – 51.6%** | **0.484** | **0.487** | 0.838 | **5.3%** |
+
+---
+
+## 11. System Architecture: How Backend, Database & Frontend Connect
 
 ```mermaid
 flowchart TD
-    subgraph FRONTEND["🖥️ Modern Frontend (React + Vite PWA)"]
-        UI1["📊 Executive Dashboard\n(KPIs, alerts, risk distribution)"]
-        UI2["⚡ Simulation Control Panel\n(Start / Stop inspections with 1 click)"]
-        UI3["🧪 Test Model Playground\n(Interactive meter testing & presets)"]
-        UI4["📱 PWA Engine\n(Installable on Android, iOS, Windows)"]
+    subgraph CLIENT["💻 Client Layer (React 18 PWA)"]
+        DASH["Executive Dashboard\nKPIs · Charts · Simulation"]
+        METERS["Meters Explorer & Drilldown"]
+        ALERTS["Alerts Management"]
+        TEST["🧪 Test Model Lab\n(Sliders · Presets · Risk Dial)"]
+        PERF["Model Performance Metrics"]
     end
 
-    subgraph BACKEND["⚡ High-Performance Backend (FastAPI Python)"]
-        API1["REST API Routes\n(/predict, /simulation/start, /meters)"]
-        PRED["🧠 CNN-LSTM Predictor Engine\n(Loads weights & calibrated fallback)"]
-        SIM["🔄 Background Simulation Controller\n(Streams live meter readings)"]
+    subgraph SERVER["⚡ Server Layer (FastAPI Backend)"]
+        ROUTER["REST API Routes\n/predict · /simulation · /alerts"]
+        PREDICTOR["🧠 CNN-LSTM Predictor\n(Preprocess → 1035 days → Risk Score)"]
+        SIM_ENG["🔄 Simulation Engine\n(Background worker streams meters)"]
     end
 
-    subgraph STORAGE["🗄️ Relational Database (SQLite)"]
-        DB1[("Meters Table")]
-        DB2[("Readings Table")]
-        DB3[("Predictions History")]
-        DB4[("Active & Closed Alerts")]
+    subgraph STORAGE["🗄️ Database Layer (SQLite)"]
+        T1[("meters table")]
+        T2[("readings table")]
+        T3[("predictions table")]
+        T4[("alerts table")]
     end
 
-    FRONTEND <== "REST API / JSON (HTTP)" ==> BACKEND
-    BACKEND <== "SQLAlchemy ORM" ==> STORAGE
+    CLIENT <== "HTTP JSON REST API" ==> ROUTER
+    ROUTER --> PREDICTOR
+    ROUTER --> SIM_ENG
+    ROUTER <== "SQLAlchemy ORM" ==> STORAGE
 ```
 
-1. **Frontend:** Built with React 18, Vite, and Tailwind-style clean UI.
-2. **Backend:** Built with Python FastAPI — fast, asynchronous, and provides automatic Swagger documentation.
-3. **Database:** SQLite stores every meter, its readings, prediction history, and alert statuses (OPEN, REVIEWED, DISMISSED).
+1. **Frontend (React 18 + Vite):** A responsive Progressive Web App that runs on desktop, tablet, and mobile.
+2. **Backend (FastAPI):** Python web framework running asynchronous endpoints (`/predict`, `/meters`, `/alerts`, `/simulation`).
+3. **Database (SQLite):** Stores meters, 1,035-day reading arrays, prediction history, and alert statuses.
 
 ---
 
-## 11. The Frontend Dashboard & Interactive Features
+## 12. Tour of Every Tab & Feature in the App (What Does Each Screen Do?)
 
-We made sure anyone can use and demonstrate the system without touching terminal commands:
+Our application is divided into **6 main tabs/pages**, each built for a specific role in a utility company:
 
-### 1. Live Simulated Monitoring (One-Click Inspection)
-Right on the top of the Dashboard, there is an interactive inspection bar:
-- Choose how many meters to inspect (`15`, `30`, `50`, or `100`).
-- Click **"▶ Start Inspection"**.
-- A background worker feeds live meter readings into the AI.
-- Watch meters update in real-time: Normal meters get a green badge, Suspicious meters trigger a red alert!
-- Click **"⏹ Stop"** or **"↺ Reset"** anytime.
-
-### 2. The "Test Model" Playground (`/test`)
-A dedicated interactive lab where you can play with the AI:
-- **Preset Buttons:**
-  - ⚡ *Theft: Sudden Bypass* (Drop to 85% lower consumption)
-  - 🔌 *Theft: Meter Tampering* (Drop with missing data gaps)
-  - 🏠 *Normal Household* (Smooth seasonal usage)
-  - 🏢 *Commercial Normal* (High steady usage)
-- **Interactive Sliders:** Change base consumption, drop day, drop severity, and missing percentage.
-- **Risk Dial:** A real-time speedometer gauge that swings between Green (Normal) and Red (Suspicious).
-- **Save to Database:** You can save your custom test meter directly to the system database with your own Meter ID!
-
-### 3. Progressive Web App (PWA)
-- Fully installable! You can click the **"Install App"** icon in Chrome or Edge to run it like a desktop app on Windows, or add it to your home screen on Android/iOS.
-- Offline-ready with cached static assets and service workers.
+### 1. 📊 Overview / Dashboard (`/`)
+The executive command center:
+- **KPI Summary Cards:** Total monitored meters, total suspicious meters, open alerts count, and average risk score.
+- **⚡ Live Inspection Bar:** A control panel at the very top:
+  - Choose meter count (`15`, `30`, `50`, or `100`).
+  - Click **"▶ Start Inspection"** to launch background inspection.
+  - Live animated status badge showing *"Inspecting meters (12/30)..."*.
+  - **"⏹ Stop"** and **"↺ Reset"** buttons.
+  - Quick link to **"🧪 Test Meter"** playground.
+- **Risk Distribution Chart:** A visual histogram showing all meters plotted from 0.0 to 1.0, with the **0.764 alert zone shaded in red**.
+- **Top Suspicious Meters Table:** Fast access to the highest-risk meters for immediate action.
+- **Recent Alerts Feed:** Live alerts as they occur.
 
 ---
 
-## 12. Cloud Deployment (Render + Vercel)
+### 2. 🔌 Meters Directory (`/meters`)
+The complete registry of every monitored smart meter:
+- **Search Bar:** Instantly look up any meter by ID (e.g., `M1042` or `C12345`).
+- **Filter Tabs:** Filter by `All`, `Normal Only`, or `Suspicious Only`.
+- **Data Table:** Shows Meter ID, current Status badge (Normal vs Suspicious), Latest Risk Score, Date Added, and a **"View Details"** button.
 
-We designed the project to be deployed live on the internet:
+---
 
+### 3. 🔍 Meter Detail View (`/meters/:id`)
+Deep forensic view of an individual customer:
+- **Status & Risk Gauge:** Large status indicator with exact risk score and threshold comparison.
+- **Interactive Daily Consumption Graph (Recharts):**
+  - Displays all **1,035 daily data points**.
+  - **Zoom Brush Tool:** Drag and highlight any date range (e.g., Summer 2015) to zoom in on specific days.
+  - **Missing Data Bands:** Light grey shaded vertical stripes indicating days where meter telemetry was missing.
+- **Prediction History Table:** Full audit trail of every time this meter was scored by the AI.
+- **Meter Alerts:** List of alerts raised for this meter and their current resolution status.
+
+---
+
+### 4. 🚨 Alerts Management Center (`/alerts`)
+The workflow tool for utility investigation teams:
+- **Status Filter:** Switch between `OPEN` (needs investigation), `REVIEWED` (inspector assigned), and `DISMISSED` (false alarm confirmed).
+- **Risk Threshold Slider:** Filter alerts by severity (e.g., show only alerts with Risk > 90%).
+- **One-Click Action Buttons:**
+  - Click **"Mark Reviewed"** when an inspection crew is dispatched.
+  - Click **"Dismiss"** if the customer had a valid reason for the drop (e.g., factory holiday shutdown).
+
+---
+
+### 5. 🧪 Test Model Playground (`/test`)
+An interactive testing laboratory where anyone can test the AI in real time:
+- **4 Instant Presets:**
+  - ⚡ **Theft: Sudden Bypass:** Simulates a customer running ACs directly off power lines (85% consumption drop).
+  - 🔌 **Theft: Tampering:** Simulates a physically jammed meter (drop + 28% missing readings).
+  - 🏠 **Normal Household:** Simulates regular seasonal domestic usage.
+  - 🏢 **Commercial Normal:** Simulates a steady, high-power shop or office.
+- **Custom Sliders:** Adjust Base Load (kWh), Drop Day, Drop Severity (%), and Missing Data (%).
+- **Raw Input Mode:** Paste your own custom numbers or CSV readings.
+- **Interactive Speedometer Gauge:** A real-time dial needle that swings between Green (Normal) and Red (Suspicious).
+- **"Save to Database" Feature:** Give your test meter a custom ID (e.g., `TEST-METER-99`) and save it directly to the dashboard!
+
+---
+
+### 6. 📈 Model Performance (`/model-performance`)
+The scientific transparency page for technical evaluators and examiners:
+- **Comprehensive Comparison Table:** Side-by-side metrics of all 5 models (Accuracy, Precision, Recall, F1, PR-AUC, ROC-AUC, FPR).
+- **PR-AUC Curve Visualization:** Displays the Precision-Recall curves with the **random-guess baseline (0.085)** marked as a dashed line.
+- **Missingness Robustness Test Table:** Shows how models perform on customers with ≤5% missing data, proving our deep learning models learn genuine consumption physics.
+
+---
+
+## 13. Step-by-Step Project Demo Flow (How to Present in Viva)
+
+When presenting this project to a professor, examiner, or client, follow this **foolproof 5-minute demo script**:
+
+```mermaid
+sequenceDiagram
+    autonumber
+    actor Presenter
+    participant Dash as 1. Dashboard
+    participant Sim as 2. Start Inspection
+    participant Detail as 3. Meter Detail
+    participant Alert as 4. Alerts Tab
+    participant Test as 5. Test Model Lab
+    participant Perf as 6. Model Performance
+
+    Presenter->>Dash: Show live KPIs & 0.764 Threshold
+    Presenter->>Sim: Select 30 meters & click "Start Inspection"
+    Sim-->>Dash: Meters stream in real time (Normal vs Suspicious)
+    Presenter->>Detail: Click a Suspicious meter & zoom into 1,035-day drop
+    Presenter->>Alert: Show raised alert & mark as "REVIEWED"
+    Presenter->>Test: Click "Theft Bypass" preset -> Gauge swings to RED (0.92)
+    Presenter->>Test: Click "Normal Household" preset -> Gauge swings to GREEN (0.08)
+    Presenter->>Perf: Show PR-AUC (0.487) beating all baselines
 ```
-[ User Browser / Phone ]
-          │
-          ▼
-   Vercel Hosting  (React PWA Frontend)
-          │
-          ▼ (HTTPS API Calls)
-   Render Hosting  (Python FastAPI Backend)
-          │
-          ▼
-   SQLite Cloud Database + Model Weights
-```
 
-- **Frontend on Vercel:** Lightning-fast static delivery with automated deployment from Git.
-- **Backend on Render:** Python 3.11 web service running FastAPI and our inference predictor.
-
----
-
-## 13. Limitations & Ethical Rules (What the System CANNOT Do)
-
-We maintain strict academic and ethical honesty about the project's limits:
-
-1. **It is NOT evidence of a crime:** A high risk score means *"inspect this meter"*, NOT *"arrest this customer"*. Legal action requires physical inspection and photographic proof of wire tampering.
-2. **Fixed Time Window:** The model was trained on 1,035 days of data. To score a brand-new meter that was installed last month, rolling-window retraining would be needed.
-3. **Simulation Mode:** The real-time dashboard is a **simulation** using held-out test data. It is not physically wired into municipal power substations.
-4. **Regional Variance:** The data comes from China. Electricity consumption patterns in Pakistan, USA, or Europe may have different seasonal rhythms (e.g., peak AC vs heating seasons) and would require fine-tuning.
+1. **Step 1 — The Dashboard (30 seconds):**
+   - Open the web app. Point to the top KPIs.
+   - Explain: *"This is a decision-support system for utility inspectors. It monitors smart meters and calculates risk scores."*
+2. **Step 2 — Live Simulation (1 minute):**
+   - In the top inspection bar, pick `30` meters and click **"▶ Start Inspection"**.
+   - Watch the counter go from 1 to 30. Point out how normal meters get low scores (`0.05`) while tampered meters get high scores (`0.91`).
+3. **Step 3 — Forensic Drilldown (1 minute):**
+   - Click on one of the newly flagged suspicious meters.
+   - Use the mouse to zoom in on the 1,035-day chart. Show the audience the sudden drop in electricity usage and the grey missing telemetry bands.
+4. **Step 4 — Alert Resolution (30 seconds):**
+   - Navigate to the **Alerts** tab. Show the new alert.
+   - Click **"Mark Reviewed"** to demonstrate the field inspector workflow.
+5. **Step 5 — The "Test Model" Lab (1.5 minutes):**
+   - Open the `/test` page.
+   - Click **"Theft: Sudden Bypass"**. Click **"Run Prediction"**. Show the risk speedometer needle swing hard right to **`0.918` (SUSPICIOUS)**.
+   - Click **"Normal Household"**. Click **"Run Prediction"**. Watch the needle swing back down to **`0.080` (NORMAL)**.
+   - Tweak a slider to show live customization.
+6. **Step 6 — Viva Conclusion on Model Performance (30 seconds):**
+   - Open the **Model Performance** tab.
+   - Conclude: *"Our proposed CNN-LSTM hybrid achieved a PR-AUC of 0.487 and 51.6% recall, beating classical baselines and standalone networks."*
 
 ---
 
-## 14. Top Viva / Interview Questions & Crystal-Clear Answers
+## 14. Cloud Deployment (Render + Vercel)
 
-If an examiner, professor, or interviewer asks you about this project, here are the exact questions they will ask and how to answer them:
+The system is configured for cloud hosting:
+
+- **Frontend on Vercel:** Static files built with Vite, served globally on high-speed CDN with PWA service workers.
+- **Backend on Render:** Python 3.11 web service executing FastAPI endpoints and inference scoring.
+- **Database:** Self-contained SQLite file, automatically initialized with tables on startup.
+
+---
+
+## 15. Limitations & Ethical Boundaries (What the System CANNOT Do)
+
+We maintain strict academic and ethical honesty about the project's boundaries:
+
+1. **Not Legal Proof of Guilt:** A high risk score means *"inspect this meter"*, NOT *"arrest this customer"*. Legal penalties require physical evidence (tampered wires, broken seals).
+2. **Fixed 1,035-Day History:** The model expects the historical period (2014–2016). Scoring a meter installed yesterday requires a sliding-window retraining architecture.
+3. **Simulation Disclaimer:** The real-time dashboard is an emulation streaming held-out test data; it is not physically plugged into city grid transformers.
+4. **Regional Transferability:** Trained on Chinese grid data. Adapting to Karachi or New York requires fine-tuning on local consumption habits.
+
+---
+
+## 16. Top Viva / Interview Questions & Crystal-Clear Answers
 
 #### Q1: "Why did you choose CNN-LSTM instead of just using a standard CNN or LSTM?"
 > **Answer:**  
@@ -408,7 +532,7 @@ If an examiner, professor, or interviewer asks you about this project, here are 
 
 <div align="center">
 
-### 🎓 You are now fully prepared to explain, demo, and defend this project!
+### 🎓 You are now 100% prepared to demo, explain, and ace your viva!
 
 **[Back to Top](#-electricity-theft-detection-system--complete-zero-knowledge-guide)** · [View Technical README](README.md)
 
