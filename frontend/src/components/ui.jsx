@@ -1,5 +1,6 @@
+import { useState, useEffect } from "react";
 import { Link } from "react-router-dom";
-import { API_BASE } from "../api";
+import { API_BASE, api } from "../api";
 import { CountUp, useMounted } from "../motion";
 
 /* ---------- icons (24px, stroke) ---------- */
@@ -157,12 +158,150 @@ export function MeterLink({ id }) {
   return <Link className="meter-link" to={`/meters/${encodeURIComponent(id)}`}>{id}</Link>;
 }
 
-export function SimulationBanner() {
+export function SimulationBanner({ onRefresh }) {
+  const [simState, setSimState] = useState({ running: false, current: 0, total: 0, alerts_raised: 0 });
+  const [busy, setBusy] = useState(false);
+  const [limit, setLimit] = useState(30);
+
+  const checkStatus = async () => {
+    try {
+      const s = await api.simulationStatus();
+      setSimState(s);
+      if (s.running && onRefresh) {
+        onRefresh();
+      }
+    } catch (e) {}
+  };
+
+  useEffect(() => {
+    checkStatus();
+    const timer = setInterval(checkStatus, simState.running ? 1500 : 4000);
+    return () => clearInterval(timer);
+  }, [simState.running]);
+
+  const handleStart = async () => {
+    setBusy(true);
+    try {
+      const s = await api.startSimulation(limit, 1.0);
+      setSimState(s);
+      if (onRefresh) onRefresh();
+    } catch (e) {
+      alert("Failed to start inspection: " + e.message);
+    } finally {
+      setBusy(false);
+    }
+  };
+
+  const handleStop = async () => {
+    setBusy(true);
+    try {
+      const s = await api.stopSimulation();
+      setSimState(s);
+      if (onRefresh) onRefresh();
+    } catch (e) {
+      console.warn(e);
+    } finally {
+      setBusy(false);
+    }
+  };
+
+  const handleReset = async () => {
+    if (!window.confirm("Reset and clear all inspected meter data?")) return;
+    setBusy(true);
+    try {
+      const s = await api.resetSimulation();
+      setSimState(s);
+      if (onRefresh) onRefresh();
+    } catch (e) {
+      alert("Failed to reset: " + e.message);
+    } finally {
+      setBusy(false);
+    }
+  };
+
   return (
-    <div className="notice">
-      <strong>Simulated Real-Time Monitoring.</strong> Data is replayed from the held-out test set by{" "}
-      <code>scripts/simulate_monitoring.py</code>; this system is not connected to real meters. A suspicious result is a
-      risk indicator for prioritising inspections, not proof of theft.
+    <div
+      className="notice"
+      style={{
+        display: "flex",
+        flexWrap: "wrap",
+        alignItems: "center",
+        justifyContent: "space-between",
+        gap: 14,
+        padding: "14px 18px",
+      }}
+    >
+      <div style={{ flex: "1 1 280px" }}>
+        <div style={{ display: "flex", alignItems: "center", gap: 8, marginBottom: 4 }}>
+          <strong style={{ fontSize: 14.5 }}>Simulated Real-Time Inspection</strong>
+          {simState.running ? (
+            <span className="badge badge-suspicious" style={{ padding: "2px 8px", fontSize: 11 }}>
+              STREAMING ({simState.current}/{simState.total}) · {simState.alerts_raised} Alerts
+            </span>
+          ) : (
+            <span className="badge badge-none" style={{ padding: "2px 8px", fontSize: 11 }}>
+              READY
+            </span>
+          )}
+        </div>
+        <div className="muted" style={{ fontSize: 13 }}>
+          {simState.running
+            ? simState.message || `Inspecting meter ${simState.last_meter_id || ""}...`
+            : "Stream smart-meter sequences into the deployed model and observe real-time risk classification & alerts."}
+        </div>
+      </div>
+
+      <div style={{ display: "flex", alignItems: "center", gap: 8, flexWrap: "wrap" }}>
+        {!simState.running ? (
+          <>
+            <select
+              value={limit}
+              onChange={(e) => setLimit(Number(e.target.value))}
+              disabled={busy}
+              style={{
+                font: "inherit",
+                fontSize: 12.5,
+                background: "var(--glass)",
+                color: "var(--text-1)",
+                border: "1px solid var(--border)",
+                borderRadius: 6,
+                padding: "5px 8px",
+                cursor: "pointer",
+              }}
+            >
+              <option value={15}>15 meters</option>
+              <option value={30}>30 meters</option>
+              <option value={50}>50 meters</option>
+              <option value={100}>100 meters</option>
+            </select>
+            <button
+              disabled={busy}
+              onClick={handleStart}
+              style={{ display: "inline-flex", alignItems: "center", gap: 6 }}
+            >
+              <span>▶</span> Start Inspection
+            </button>
+            <button className="ghost" disabled={busy} onClick={handleReset} title="Clear database and start fresh">
+              🔄 Reset Demo
+            </button>
+          </>
+        ) : (
+          <button
+            onClick={handleStop}
+            disabled={busy}
+            style={{
+              background: "var(--series-2)",
+              borderColor: "var(--series-2)",
+              color: "#fff",
+              display: "inline-flex",
+              alignItems: "center",
+              gap: 6,
+            }}
+          >
+            <span>⏹</span> Stop Inspection
+          </button>
+        )}
+      </div>
     </div>
   );
 }

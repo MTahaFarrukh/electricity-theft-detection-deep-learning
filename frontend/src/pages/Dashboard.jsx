@@ -5,10 +5,15 @@ import { Hero } from "../components/visuals";
 import { fmtScore, fmtTime, useApi } from "../hooks";
 
 export default function Dashboard() {
-  const { data, loading, error } = useApi(api.summary, [], 5000); // live while the simulator runs
-  const { data: meters } = useApi(() => api.meters(), [], 5000);
+  const { data, loading, error, reload } = useApi(api.summary, [], 5000); // live while the simulator runs
+  const { data: meters, reload: reloadMeters } = useApi(() => api.meters(), [], 5000);
   const threshold = data?.model?.model_loaded ? data.model.threshold : null;
   const top = (meters || []).slice(0, 8);
+
+  const handleRefresh = () => {
+    reload();
+    reloadMeters();
+  };
 
   // Highlight alerts that arrive while the page is open (the first load is not "new").
   const seen = useRef(null);
@@ -31,7 +36,7 @@ export default function Dashboard() {
       {data && (
         <>
           <Hero data={data} />
-          <SimulationBanner />
+          <SimulationBanner onRefresh={handleRefresh} />
 
           <div className="dash-grid">
             <Card title="Risk score distribution"

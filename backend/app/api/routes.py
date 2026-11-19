@@ -21,6 +21,7 @@ from backend.app.schemas.api import (
     PredictResponse,
 )
 from backend.app.services.scoring import ModelUnavailable, score_and_store
+from backend.app.services.simulation import simulation_controller
 
 router = APIRouter()
 
@@ -132,6 +133,26 @@ def model_metrics(request: Request):
                       ("validation_deep", settings.results_dir / "deep_validation.json")]:
         out[key] = json.loads(path.read_text(encoding="utf-8")) if path.exists() else None
     return out
+
+
+@router.get("/simulation/status")
+def simulation_status():
+    return simulation_controller.status()
+
+
+@router.post("/simulation/start")
+def simulation_start(request: Request, limit: int = Query(30, ge=5, le=500), interval: float = Query(1.0, ge=0.1, le=10.0), predictor=Depends(get_predictor)):
+    return simulation_controller.start(request.app.state.session_factory, predictor, limit=limit, interval=interval)
+
+
+@router.post("/simulation/stop")
+def simulation_stop():
+    return simulation_controller.stop()
+
+
+@router.post("/simulation/reset")
+def simulation_reset(request: Request):
+    return simulation_controller.reset_data(request.app.state.session_factory)
 
 
 # --- helpers -----------------------------------------------------------------
