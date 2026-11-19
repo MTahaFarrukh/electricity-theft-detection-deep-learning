@@ -13,7 +13,7 @@ class Settings(BaseSettings):
 
     app_env: str = "development"
     database_url: str = f"sqlite:///{(PROJECT_ROOT / 'backend' / 'etd.db').as_posix()}"
-    cors_origins: str = "http://localhost:5173"
+    cors_origins: str = "*"
     model_metadata_path: Path = PROJECT_ROOT / "artifacts" / "metadata" / "model.json"
     results_dir: Path = PROJECT_ROOT / "reports" / "results"
 
