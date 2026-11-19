@@ -1,64 +1,60 @@
-import { Bar, BarChart, CartesianGrid, ResponsiveContainer, Tooltip, XAxis, YAxis } from "recharts";
+import { useEffect, useRef, useState } from "react";
 import { api } from "../api";
-import { AlertStatus, Card, ChartTooltip, MeterLink, SimulationBanner, StatTile, Status } from "../components/ui";
+import { AlertStatus, Card, Empty, MeterLink, RiskHistogram, RiskMeter, SimulationBanner, Status } from "../components/ui";
+import { Hero } from "../components/visuals";
 import { fmtScore, fmtTime, useApi } from "../hooks";
 
 export default function Dashboard() {
   const { data, loading, error } = useApi(api.summary, [], 5000); // live while the simulator runs
-  const model = data?.model;
-  const histogram = (data?.risk_histogram || []).map((b) => ({ ...b, bin: `${b.from.toFixed(1)}–${b.to.toFixed(1)}` }));
+  const { data: meters } = useApi(() => api.meters(), [], 5000);
+  const threshold = data?.model?.model_loaded ? data.model.threshold : null;
+  const top = (meters || []).slice(0, 8);
+
+  // Highlight alerts that arrive while the page is open (the first load is not "new").
+  const seen = useRef(null);
+  const [fresh, setFresh] = useState(() => new Set());
+  useEffect(() => {
+    if (!data) return;
+    const ids = data.recent_alerts.map((a) => a.id);
+    if (seen.current === null) { seen.current = new Set(ids); return; }
+    const added = ids.filter((id) => !seen.current.has(id));
+    if (added.length) {
+      added.forEach((id) => seen.current.add(id));
+      setFresh(new Set(added));
+      setTimeout(() => setFresh(new Set()), 4500);
+    }
+  }, [data]);
 
   return (
     <>
-      <h1>Dashboard</h1>
-      <SimulationBanner />
-      <Status loading={loading && !data} error={error} />
+      <Status loading={loading && !data} error={error} lines={4} />
       {data && (
         <>
-          <div className="tiles">
-            <StatTile label="Meters monitored" value={data.n_meters.toLocaleString()} />
-            <StatTile label="Suspicious (latest score)" value={data.n_suspicious.toLocaleString()}
-              note="Investigation recommended" />
-            <StatTile label="Normal (latest score)" value={data.n_normal.toLocaleString()} />
-            <StatTile label="Open alerts" value={data.alerts_by_status.OPEN.toLocaleString()}
-              note={`${data.alerts_by_status.REVIEWED} reviewed · ${data.alerts_by_status.DISMISSED} dismissed`} />
-          </div>
-          <p className="muted small">
-            Model: {model?.model_loaded ? `${model.model} · threshold ${fmtScore(model.threshold)}` : "not loaded"} ·
-            refreshes every 5 s
-          </p>
+          <Hero data={data} />
+          <SimulationBanner />
 
-          <div className="grid-2">
-            <Card title="Risk score distribution" subtitle="Latest score per meter. Scores at or above the threshold raise an alert.">
+          <div className="dash-grid">
+            <Card title="Risk score distribution"
+              subtitle="Latest score per meter. Meters in the shaded zone, at or above the threshold, raise an alert.">
               {data.n_meters === 0 ? (
-                <p className="muted">No meters scored yet. Start the simulator to replay test meters.</p>
+                <Empty title="No meters scored yet">
+                  Start the simulator to replay held-out test meters: <code>python scripts/simulate_monitoring.py</code>
+                </Empty>
               ) : (
-                <ResponsiveContainer width="100%" height={260}>
-                  <BarChart data={histogram} margin={{ top: 8, right: 8, bottom: 8, left: 0 }}>
-                    <CartesianGrid vertical={false} stroke="var(--grid)" />
-                    <XAxis dataKey="bin" tick={{ fill: "var(--muted)", fontSize: 11 }} stroke="var(--axis)" />
-                    <YAxis allowDecimals={false} tick={{ fill: "var(--muted)", fontSize: 11 }} stroke="var(--axis)" />
-                    <Tooltip cursor={{ fill: "var(--hover)" }}
-                      content={<ChartTooltip labelFormatter={(l) => `Risk score ${l}`} />} />
-                    <Bar dataKey="count" name="Meters" fill="var(--series-1)" radius={[4, 4, 0, 0]} maxBarSize={40} />
-                  </BarChart>
-                </ResponsiveContainer>
+                <RiskHistogram bins={data.risk_histogram} threshold={threshold} />
               )}
             </Card>
 
-            <Card title="Recent alerts">
-              {data.recent_alerts.length === 0 ? (
-                <p className="muted">No alerts yet.</p>
-              ) : (
+            <Card title="Highest-risk meters" subtitle="Top of the inspection queue. The tick marks the alert threshold.">
+              {top.length === 0 ? <Empty title="Nothing to rank yet" /> : (
                 <table>
-                  <thead><tr><th>Meter</th><th className="num">Risk</th><th>Status</th><th>Raised</th></tr></thead>
+                  <thead><tr><th>Meter</th><th>Risk score</th><th className="num">Open alerts</th></tr></thead>
                   <tbody>
-                    {data.recent_alerts.map((a) => (
-                      <tr key={a.id}>
-                        <td><MeterLink id={a.meter_id} /></td>
-                        <td className="num">{fmtScore(a.risk_score)}</td>
-                        <td><AlertStatus status={a.status} /></td>
-                        <td className="muted">{fmtTime(a.created_at)}</td>
+                    {top.map((m, i) => (
+                      <tr key={m.meter_id} className="row" style={{ "--i": i }}>
+                        <td><MeterLink id={m.meter_id} /></td>
+                        <td><RiskMeter score={m.latest_risk_score} threshold={threshold} /></td>
+                        <td className="num">{m.open_alerts}</td>
                       </tr>
                     ))}
                   </tbody>
@@ -66,6 +62,29 @@ export default function Dashboard() {
               )}
             </Card>
           </div>
+
+          <Card title="Recent alerts">
+            {data.recent_alerts.length === 0 ? (
+              <Empty title="No alerts yet">An alert appears when a meter’s risk score reaches the threshold.</Empty>
+            ) : (
+              <table>
+                <thead><tr><th>Meter</th><th>Risk score</th><th>Status</th><th>Raised</th></tr></thead>
+                <tbody>
+                  {data.recent_alerts.map((a, i) => (
+                    <tr key={a.id} className={`row ${fresh.has(a.id) ? "fresh" : ""}`} style={{ "--i": i }}>
+                      <td><MeterLink id={a.meter_id} /></td>
+                      <td><RiskMeter score={a.risk_score} threshold={threshold} /></td>
+                      <td><AlertStatus status={a.status} /></td>
+                      <td className="muted">{fmtTime(a.created_at)}</td>
+                    </tr>
+                  ))}
+                </tbody>
+              </table>
+            )}
+          </Card>
+          <p className="muted small">
+            Model: {data.model?.model_loaded ? `${data.model.model} · threshold ${fmtScore(data.model.threshold)}` : "not loaded"}
+          </p>
         </>
       )}
     </>

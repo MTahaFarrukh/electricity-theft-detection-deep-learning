@@ -3,6 +3,33 @@
   <head>
     <meta charset="UTF-8" />
     <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+    <meta name="description" content="Dashboard for a CNN-LSTM electricity theft detection system: risk scores, alerts and model evaluation on SGCC smart-meter data." />
+    <meta name="theme-color" content="#0e1b2c" />
+    <meta name="mobile-web-app-capable" content="yes" />
+    <meta name="apple-mobile-web-app-capable" content="yes" />
+    <meta name="apple-mobile-web-app-status-bar-style" content="black-translucent" />
+    <meta name="apple-mobile-web-app-title" content="TheftMonitor" />
+    <link rel="icon" type="image/svg+xml" href="/favicon.svg" />
+    <link rel="apple-touch-icon" href="/apple-touch-icon.png" />
+    <link rel="manifest" href="/manifest.webmanifest" />
+    <script>
+      // Register PWA service worker
+      if ("serviceWorker" in navigator && !window.location.host.startsWith("localhost:517")) {
+        window.addEventListener("load", function () {
+          navigator.serviceWorker.register("/sw.js").catch(function (err) {
+            console.warn("PWA ServiceWorker registration failed: ", err);
+          });
+        });
+      }
+    </script>
+    <script>
+      // Set the theme before first paint to avoid a flash (see src/theme.js).
+      try {
+        var m = localStorage.getItem("etd-theme") || "system";
+        var dark = m === "dark" || (m === "system" && matchMedia("(prefers-color-scheme: dark)").matches);
+        document.documentElement.dataset.theme = dark ? "dark" : "light";
+      } catch (e) {}
+    </script>
     <title>Theft Risk Monitor</title>
   </head>
   <body>

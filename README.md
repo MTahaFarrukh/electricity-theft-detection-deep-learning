@@ -1,6 +1,6 @@
 ﻿# AI-Based Electricity Theft Detection System Using CNN-LSTM
 
-> Final Year Project. A decision-support system that flags **suspicious electricity-consumption
+> A decision-support system that flags **suspicious electricity-consumption
 > patterns** in smart-meter data for investigation. A prediction is **not** proof of theft.
 
 **Project status:** All phases done. The final, one-time test results are in section 12. The deployed model is the
@@ -10,7 +10,7 @@ CNN-LSTM (seed 1): test PR-AUC 0.487, recall 0.500, FPR 0.053.
 
 ## 1. Project overview
 The system analyses time series of smart-meter consumption and gives each meter a **risk score**
-(0â€“1) and a classification of **NORMAL** or **SUSPICIOUS**. The proposed model is a hybrid
+(0–1) and a classification of **NORMAL** or **SUSPICIOUS**. The proposed model is a hybrid
 **CNN-LSTM**. It is compared against Logistic Regression, Random Forest, a stand-alone 1D-CNN and a
 stand-alone LSTM. The results are served through a FastAPI backend and a React dashboard, which
 includes a clearly labelled **simulated** real-time monitoring mode.
@@ -34,18 +34,18 @@ false alert can cause an unjustified investigation of an honest customer.
 
 ```
             OFFLINE (training)                                   ONLINE (serving)
-â”Œâ”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”        â”Œâ”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”
-â”‚ data/raw â”€â–º audit â”€â–º preprocessing   â”‚        â”‚  Simulator (scripts/) â”€â”€HTTPâ”€â”€â–º FastAPI       â”‚
-â”‚   (customer-level split FIRST)       â”‚        â”‚                                  â”‚            â”‚
-â”‚        â”‚                             â”‚        â”‚     inference service â—„â”€â”€ models/ + artifacts/â”‚
-â”‚        â–¼                             â”‚ saved  â”‚            â”‚                                  â”‚
-â”‚  EDA â”€â–º baselines â”€â–º CNN â”€â–º LSTM â”€â–º  â”‚ â”€â”€â”€â”€â”€â–º â”‚            â–¼                                  â”‚
-â”‚        CNN-LSTM â”€â–º evaluation        â”‚ models â”‚     SQLite (meters, readings, predictions,    â”‚
-â”‚        + threshold selection (val)   â”‚  +     â”‚             alerts)                           â”‚
-â”‚                                      â”‚ scaler â”‚            â”‚                                  â”‚
-â””â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”˜        â”‚            â–¼  REST/JSON                       â”‚
-                                                â”‚     React + Vite dashboard (Recharts)         â”‚
-                                                â””â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”˜
+┌──────────────────────────────────────┐        ┌──────────────────────────────────────────────┐
+│ data/raw ─► audit ─► preprocessing   │        │  Simulator (scripts/) ──HTTP──► FastAPI       │
+│   (customer-level split FIRST)       │        │                                  │            │
+│        │                             │        │     inference service ◄── models/ + artifacts/│
+│        ▼                             │ saved  │            │                                  │
+│  EDA ─► baselines ─► CNN ─► LSTM ─►  │ ─────► │            ▼                                  │
+│        CNN-LSTM ─► evaluation        │ models │     SQLite (meters, readings, predictions,    │
+│        + threshold selection (val)   │  +     │             alerts)                           │
+│                                      │ scaler │            │                                  │
+└──────────────────────────────────────┘        │            ▼  REST/JSON                       │
+                                                │     React + Vite dashboard (Recharts)         │
+                                                └──────────────────────────────────────────────┘
 ```
 
 Design principles: the stack is a **single backend process** with no microservices, **one SQLite
@@ -65,12 +65,12 @@ Full audit: `reports/audit/dataset_audit.md`. Verified facts:
 
 ## 6. Data preprocessing
 Code: `src/preprocessing/pipeline.py`, run with `scripts/preprocess.py`.
-1. Parse date columns, sort chronologically, and insert the missing day (2016-09-18) as missing â†’ 1,035 days.
+1. Parse date columns, sort chronologically, and insert the missing day (2016-09-18) as missing → 1,035 days.
 2. Coerce invalid readings to missing; drop the 5 customers with no readings (uses no label information).
 3. **Split customers 70/15/15 into train/validation/test, stratified by label, BEFORE anything is fitted.**
    Train 29,657 / val 6,355 / test 6,355 customers, each with an 8.5% positive rate. Seed from `RANDOM_SEED`.
 4. Cap readings at the 99.9th percentile of the **training** readings (365.0).
-5. Linearly interpolate interior gaps of â‰¤ 7 days, using only that customer's own series. Longer, leading and trailing gaps stay missing.
+5. Linearly interpolate interior gaps of ≤ 7 days, using only that customer's own series. Longer, leading and trailing gaps stay missing.
 6. `log1p`, then standardise with mean/std fitted **on training readings only**. Remaining gaps are set to 0.
 7. A **missingness mask** (1 = originally missing) is kept as a second channel, since missingness differs by class.
 8. **Sequence design:** labels are per customer, so each customer is **one sample: the full 1,035-day series**.
@@ -84,14 +84,14 @@ Run with `python scripts/eda.py`. Figures: `reports/figures/eda_*.png`, table: `
 Validation and test customers are excluded, so EDA cannot leak held-out data into modelling decisions.
 
 - **Theft-labelled customers consume more, not less**: median per-customer mean of 8.8 vs 5.5 kWh/day.
-  Their consumption is also more variable (std 1.96Ã—, coefficient of variation 1.21Ã—). Theft shows up as
+  Their consumption is also more variable (std 1.96×, coefficient of variation 1.21×). Theft shows up as
   irregular patterns, such as sudden long drops, rather than simply low usage.
-- **Missingness is strongly associated with the label**: theft-labelled customers have 2.2Ã— the median
-  missing fraction (0.21 vs 0.10). Before 2016 about 35â€“43% of readings are missing; from 2016-01-01 it is
+- **Missingness is strongly associated with the label**: theft-labelled customers have 2.2× the median
+  missing fraction (0.21 vs 0.10). Before 2016 about 35–43% of readings are missing; from 2016-01-01 it is
   under 4% for both classes. This justifies the mask channel, and it is a **risk**: a model could partly
   learn data-collection artefacts. This is analysed in Phase 9 and listed under limitations.
 - **Data-quality days**: 2014-10-03 is about 99% missing and 2016-09-18 is absent from the file.
-- **Weekly profile**: weekend consumption is 1â€“2% above the weekly mean for both classes, a weak weekly cycle.
+- **Weekly profile**: weekend consumption is 1–2% above the weekly mean for both classes, a weak weekly cycle.
   This supports a weekly (7-day) structure in the CNN design.
 - **Label noise is visible**: some normal-labelled customers read 0 kWh on every day.
 
@@ -100,10 +100,10 @@ Code: `src/models/deep.py` (`build_cnn`). Input: **(1036, 2)**, i.e. 1,035 days 
 148 whole weeks. Channel 0 is preprocessed consumption, channel 1 is the missingness mask.
 
 ```
-Conv1D(32, k=7) â†’ BN â†’ ReLU â†’ MaxPool(2)      # first kernel spans one week (weekly cycle from EDA)
-Conv1D(64, k=5) â†’ BN â†’ ReLU â†’ MaxPool(2)
-Conv1D(64, k=3) â†’ BN â†’ ReLU â†’ MaxPool(2)
-[GlobalAvgPool â€– GlobalMaxPool] â†’ Dropout(0.3) â†’ Dense(32, ReLU) â†’ Dropout(0.3) â†’ Dense(1, sigmoid)
+Conv1D(32, k=7) → BN → ReLU → MaxPool(2)      # first kernel spans one week (weekly cycle from EDA)
+Conv1D(64, k=5) → BN → ReLU → MaxPool(2)
+Conv1D(64, k=3) → BN → ReLU → MaxPool(2)
+[GlobalAvgPool ‖ GlobalMaxPool] → Dropout(0.3) → Dense(32, ReLU) → Dropout(0.3) → Dense(1, sigmoid)
 ```
 27,777 parameters. Trained with `python scripts/train_deep.py --model cnn` (shared trainer for all deep
 models: BCE loss, Adam 1e-3, batch 128, balanced class weights, ReduceLROnPlateau, early stopping on validation
@@ -112,11 +112,11 @@ PR-AUC with patience 6, seed 42). The best validation PR-AUC came at epoch 39 of
 
 ## 8. LSTM architecture
 Code: `src/models/deep.py` (`build_lstm`). It takes the same (1036, 2) input, which is reshaped **inside the model** to
-**148 weekly steps Ã— 14 features** (7 days Ã— [value, mask]). Running an LSTM over 1,036 daily steps is very slow on a
+**148 weekly steps × 14 features** (7 days × [value, mask]). Running an LSTM over 1,036 daily steps is very slow on a
 CPU, and recurrent nets struggle with dependencies that long. Weekly steps keep the weekly structure found in the EDA.
 
 ```
-Reshape(148, 14) â†’ LSTM(64, return_sequences) â†’ LSTM(32) â†’ Dropout(0.3) â†’ Dense(32, ReLU) â†’ Dropout(0.3) â†’ Dense(1, sigmoid)
+Reshape(148, 14) → LSTM(64, return_sequences) → LSTM(32) → Dropout(0.3) → Dense(32, ReLU) → Dropout(0.3) → Dense(1, sigmoid)
 ```
 33,729 parameters. Same trainer and settings as the CNN (`python scripts/train_deep.py --model lstm`).
 The best validation PR-AUC came at epoch 38 of 40 (23 min on CPU).
@@ -126,14 +126,14 @@ inputs. This motivates the hybrid model.
 
 ## 9. CNN-LSTM architecture (proposed model)
 Code: `src/models/deep.py` (`build_cnn_lstm`). It uses the same convolutional blocks as the CNN. These extract local
-patterns and shorten the daily sequence 8Ã— (1,036 â†’ 129 steps of 64 learned features). LSTM layers then model how
+patterns and shorten the daily sequence 8× (1,036 → 129 steps of 64 learned features). LSTM layers then model how
 those patterns evolve over the whole period, in place of the CNN's order-blind global pooling.
 
 ```
-Conv1D(32, k=7) â†’ BN â†’ ReLU â†’ MaxPool(2)
-Conv1D(64, k=5) â†’ BN â†’ ReLU â†’ MaxPool(2)
-Conv1D(64, k=3) â†’ BN â†’ ReLU â†’ MaxPool(2)      # (129, 64)
-LSTM(64, return_sequences) â†’ LSTM(32) â†’ Dropout(0.3) â†’ Dense(32, ReLU) â†’ Dropout(0.3) â†’ Dense(1, sigmoid)
+Conv1D(32, k=7) → BN → ReLU → MaxPool(2)
+Conv1D(64, k=5) → BN → ReLU → MaxPool(2)
+Conv1D(64, k=3) → BN → ReLU → MaxPool(2)      # (129, 64)
+LSTM(64, return_sequences) → LSTM(32) → Dropout(0.3) → Dense(32, ReLU) → Dropout(0.3) → Dense(1, sigmoid)
 ```
 70,145 parameters. Same trainer and settings as the other deep models (`python scripts/train_deep.py --model cnn_lstm`).
 Early stopping ended training at epoch 36; the best epoch was 30 (83 min on CPU).
@@ -152,7 +152,7 @@ epochs, early-stopping patience 6 with the best weights restored, ReduceLROnPlat
 balanced class weights {0: 0.55, 1: 5.87} and seed 42. Extra seeds are added with `--seed N --run-name seedN`.
 Baselines: Logistic Regression (C in {0.01, 0.1, 1}, chosen on validation PR-AUC) and Random Forest (400 trees,
 min_samples_leaf 5, balanced_subsample), both on standardised hand-crafted features (`scripts/train_baselines.py`).
-Training happens offline only, on a CPU (Windows). Per-model times are given in sections 7â€“9.
+Training happens offline only, on a CPU (Windows). Per-model times are given in sections 7–9.
 
 ## 11. Evaluation methodology
 - Metrics: accuracy, precision, recall, F1, PR-AUC, ROC-AUC, false-positive rate and the confusion matrix.
@@ -167,10 +167,10 @@ Training happens offline only, on a CPU (Windows). Per-model times are given in 
    **Deployed weights** = that architecture's run with the highest validation PR-AUC. Its validation-chosen threshold
    is written to `artifacts/metadata/model.json` *before* any test score is computed.
 3. Every trained run is then scored **once** on test with its own validation threshold. Architectures are reported as
-   mean Â± std over seeds. Nothing is retrained or re-selected after the test scores are seen, and the script refuses to run twice.
-4. **Missingness robustness:** test metrics are also reported for customers with â‰¤ 5% missing readings. This checks
+   mean ± std over seeds. Nothing is retrained or re-selected after the test scores are seen, and the script refuses to run twice.
+4. **Missingness robustness:** test metrics are also reported for customers with ≤ 5% missing readings. This checks
    whether performance depends on missing-data artefacts (see the EDA).
-5. Before testing, the script checks that `src/inference/` (raw readings â†’ `Predictor`) reproduces the
+5. Before testing, the script checks that `src/inference/` (raw readings → `Predictor`) reproduces the
    evaluation scores on validation customers, so the API serves exactly the evaluated model.
 
 ## 12. Results
@@ -194,14 +194,14 @@ carry some label signal**. The full-feature models are well above it, so they ar
 data-collection artefacts. The Random Forest's top features are `max`, `monthly_std`, `trend_slope` and `std`:
 variability and trend, which matches the EDA.
 
-**Extra seeds (validation PR-AUC).** 1D-CNN: 0.453 / 0.448 / 0.444 (seeds 42 / 1 / 2), mean 0.448 Â± 0.004.
-CNN-LSTM: 0.478 / 0.495 / 0.461, mean 0.478 Â± 0.017. Under the pre-registered rule, the **CNN-LSTM** was selected
+**Extra seeds (validation PR-AUC).** 1D-CNN: 0.453 / 0.448 / 0.444 (seeds 42 / 1 / 2), mean 0.448 ± 0.004.
+CNN-LSTM: 0.478 / 0.495 / 0.461, mean 0.478 ± 0.017. Under the pre-registered rule, the **CNN-LSTM** was selected
 and its best run (**seed 1**, validation PR-AUC 0.495, threshold 0.764) was deployed. This was recorded in
 `artifacts/metadata/model.json` before any test score was computed.
 
 ### Final test results
-Test split: 6,355 customers, 8.5% positive (random PR-AUC â‰ˆ 0.085). Each model uses its own validation threshold.
-CNN and CNN-LSTM are shown as **mean Â± std over 3 seeds**; the other models were trained once.
+Test split: 6,355 customers, 8.5% positive (random PR-AUC ≈ 0.085). Each model uses its own validation threshold.
+CNN and CNN-LSTM are shown as **mean ± std over 3 seeds**; the other models were trained once.
 Source: `reports/results/test_results.json`; figures `reports/figures/test_pr_curves.png`, `test_confusion_matrix.png`.
 
 | Model | Accuracy | Precision | Recall | F1 | PR-AUC | ROC-AUC | FPR |
@@ -209,16 +209,16 @@ Source: `reports/results/test_results.json`; figures `reports/figures/test_pr_cu
 | Missingness-only LR (heuristic) | 0.795 | 0.171 | 0.365 | 0.233 | 0.180 | 0.677 | 0.165 |
 | Logistic Regression | 0.861 | 0.274 | 0.382 | 0.319 | 0.284 | 0.774 | 0.094 |
 | Random Forest | 0.900 | 0.411 | 0.391 | 0.401 | 0.394 | 0.828 | 0.052 |
-| 1D-CNN (3 seeds) | 0.901 Â± 0.007 | 0.432 Â± 0.030 | 0.488 Â± 0.013 | 0.458 Â± 0.012 | 0.459 Â± 0.011 | **0.847 Â± 0.007** | **0.060 Â± 0.009** |
+| 1D-CNN (3 seeds) | 0.901 ± 0.007 | 0.432 ± 0.030 | 0.488 ± 0.013 | 0.458 ± 0.012 | 0.459 ± 0.011 | **0.847 ± 0.007** | **0.060 ± 0.009** |
 | LSTM | 0.882 | 0.335 | 0.395 | 0.362 | 0.337 | 0.795 | 0.073 |
-| **CNN-LSTM (3 seeds)** | 0.899 Â± 0.009 | 0.427 Â± 0.037 | **0.516 Â± 0.015** | **0.466 Â± 0.017** | **0.475 Â± 0.016** | 0.834 Â± 0.005 | 0.065 Â± 0.011 |
+| **CNN-LSTM (3 seeds)** | 0.899 ± 0.009 | 0.427 ± 0.037 | **0.516 ± 0.015** | **0.466 ± 0.017** | **0.475 ± 0.016** | 0.834 ± 0.005 | 0.065 ± 0.011 |
 | *Deployed: CNN-LSTM seed 1* | 0.909 | 0.469 | 0.500 | 0.484 | 0.487 | 0.838 | 0.053 |
 
 Deployed model on test: TP 271, FP 307, FN 271, TN 5,506. About half of the theft-labelled customers are flagged,
 and roughly 1 in 2 flagged customers is theft-labelled (versus 1 in 12 at random).
 
 **Interpretation.**
-- The deep models clearly beat the baselines: the CNN-LSTM reaches a PR-AUC of 0.475, about 5.6Ã— the random level,
+- The deep models clearly beat the baselines: the CNN-LSTM reaches a PR-AUC of 0.475, about 5.6× the random level,
   compared with 0.394 for the Random Forest and 0.284 for Logistic Regression.
 - **CNN-LSTM vs 1D-CNN:** the CNN-LSTM has the higher mean PR-AUC, recall and F1. The CNN has the higher ROC-AUC and
   the lower FPR. The PR-AUC gap (0.016) is about one standard deviation across seeds, so with three seeds **the two
@@ -227,20 +227,20 @@ and roughly 1 in 2 flagged customers is theft-labelled (versus 1 in 12 at random
 - The stand-alone LSTM is the weakest deep model, which supports using convolutional feature extraction before the LSTM.
 - Validation and test numbers agree closely, which suggests no overfitting to the validation split.
 
-**Missingness robustness: customers with â‰¤ 5% missing readings** (n = 2,756, 5.8% positive, random PR-AUC â‰ˆ 0.058).
+**Missingness robustness: customers with ≤ 5% missing readings** (n = 2,756, 5.8% positive, random PR-AUC ≈ 0.058).
 
 | Model | PR-AUC | ROC-AUC | Recall | FPR |
 |---|---|---|---|---|
 | Missingness-only LR | 0.132 | 0.679 | 0.138 | 0.017 |
 | Logistic Regression | 0.199 | 0.785 | 0.319 | 0.083 |
 | Random Forest | 0.294 | 0.837 | 0.306 | 0.040 |
-| 1D-CNN (3 seeds) | 0.442 Â± 0.005 | 0.875 Â± 0.011 | 0.458 Â± 0.019 | 0.045 Â± 0.008 |
+| 1D-CNN (3 seeds) | 0.442 ± 0.005 | 0.875 ± 0.011 | 0.458 ± 0.019 | 0.045 ± 0.008 |
 | LSTM | 0.315 | 0.809 | 0.369 | 0.057 |
-| CNN-LSTM (3 seeds) | 0.440 Â± 0.016 | 0.840 Â± 0.007 | 0.525 Â± 0.027 | 0.053 Â± 0.008 |
+| CNN-LSTM (3 seeds) | 0.440 ± 0.016 | 0.840 ± 0.007 | 0.525 ± 0.027 | 0.053 ± 0.008 |
 
-On nearly complete series, the deep models keep a PR-AUC of about 0.44, roughly 7.6Ã— the random level of this subset,
+On nearly complete series, the deep models keep a PR-AUC of about 0.44, roughly 7.6× the random level of this subset,
 and their ROC-AUC rises. The missingness-only model falls to 0.132. **So the deep models' performance does not rely
-mainly on missing-data artefacts.** The Random Forest loses more on this subset (0.394 â†’ 0.294), which suggests its
+mainly on missing-data artefacts.** The Random Forest loses more on this subset (0.394 → 0.294), which suggests its
 hand-crafted features depend more on missingness.
 
 **Error analysis (deployed model, test).** Medians per group (`reports/results/test_predictions_deployed.csv`):
@@ -290,10 +290,27 @@ new alert.** Response:
 Tests: `backend/tests/test_api.py` (fake model, temporary database).
 
 ## 14. Frontend
-React + Vite + Recharts (`frontend/`). Pages: Dashboard, Meters, Meter Details, Alerts, Model Performance and
-About/Methodology. Every number shown comes from the backend. Suspicious meters display
-"Investigation Recommended", never "theft confirmed". Status is shown with an icon and a label, never colour alone.
-Light and dark mode are supported. The dashboard refreshes every 5 s while the simulator runs.
+React + Vite + Recharts (`frontend/`). Pages: Overview, Meters, Meter detail, Alerts, Model performance and
+About/Methodology, with a sidebar that also shows whether the API and model are reachable. Every number shown
+comes from the backend. Suspicious meters display "Investigation Recommended", never "theft confirmed". Status is
+shown with an icon and a label, never colour alone (blue = normal, orange = suspicious, the same pair as the EDA figures).
+
+- **Risk meter:** each risk score is drawn on a 0-1 bar with a tick at the validated decision threshold, so it is
+  clear at a glance which side of the threshold a meter is on.
+- **Overview:** counts, a risk-score histogram with the alert zone shaded, the highest-risk meters and recent alerts.
+- **Meters:** search by meter ID and filter by result. **Meter detail:** daily consumption with missing-reading bands and
+  a zoom brush, prediction history and alerts. **Alerts:** filter by status and mark alerts reviewed or dismissed.
+- **Model performance:** stored validation and test results; the deployed model is tagged and the best value in each
+  column is bold. The PR-AUC chart marks the random-classifier level.
+
+- **Motion:** an animated consumption curve with the anomaly marked, count-up numbers, a risk dial with a swinging needle,
+  bars and tables that animate in, new alerts that flash when they arrive, and a short intro once per session.
+  Everything respects the system "reduce motion" setting.
+- **Shortcuts:** Ctrl/Cmd+K (or `/`) opens quick search for pages and meter IDs; the sidebar button switches between
+  system, light and dark theme.
+
+The layout works on phones. Fonts are bundled with the app (no internet needed). The overview refreshes every 5 s while
+the simulator runs.
 
 ## 15. Simulated real-time monitoring
 `scripts/simulate_monitoring.py` replays **held-out test-set** sequences to `/predict` at a configurable interval. The
@@ -314,7 +331,7 @@ Python 3.11 or 3.12 is required for TensorFlow. On native Windows, TensorFlow ru
 only. For GPU training, use Google Colab or WSL2.
 
 ## 17. How to train
-Full offline pipeline, in order (total about 6â€“7 h on a CPU):
+Full offline pipeline, in order (total about 6–7 h on a CPU):
 ```bash
 python scripts/extract_sgcc.py                 # data/raw/sgcc_zip/* -> data/raw/data.csv
 python scripts/audit_dataset.py data/raw/data.csv
@@ -359,7 +376,7 @@ To use another API address, set `VITE_API_BASE_URL` in `frontend/.env` (see `fro
 - Deep models were trained on a CPU with a small hyper-parameter search, so better configurations may exist.
 
 ## 21. Future work
-- Score rolling windows (e.g. the last 6â€“12 months) so new meters and current periods can be monitored, retraining periodically.
+- Score rolling windows (e.g. the last 6–12 months) so new meters and current periods can be monitored, retraining periodically.
 - A broader hyper-parameter search and attention layers, trained on a GPU.
 - Probability calibration, and choosing the threshold from inspection cost and capacity rather than F1.
 - Explanations for each alert (e.g. which weeks drove the score) to help inspectors.
@@ -369,16 +386,16 @@ To use another API address, set `VITE_API_BASE_URL` in `frontend/.env` (see `fro
 
 ## Project structure
 ```
-â”œâ”€â”€ data/            raw/ (not committed), processed/, README.md
-â”œâ”€â”€ src/             data/, preprocessing/, features/, models/, training/, evaluation/, inference/
-â”œâ”€â”€ models/          baselines/, cnn/, lstm/, cnn_lstm/   (trained model files, not committed)
-â”œâ”€â”€ artifacts/       scalers/, encoders/, metadata/        (preprocessing + threshold metadata)
-â”œâ”€â”€ reports/         audit/, figures/, results/
-â”œâ”€â”€ backend/         app/{api,schemas,services,models,core}, tests/
-â”œâ”€â”€ frontend/        React + Vite + Recharts dashboard
-â”œâ”€â”€ scripts/         CLI entry points (audit, training, simulator)
-â”œâ”€â”€ tests/           tests for the ML pipeline
-â””â”€â”€ docs/            viva Q&A
+├── data/            raw/ (not committed), processed/, README.md
+├── src/             data/, preprocessing/, features/, models/, training/, evaluation/, inference/
+├── models/          baselines/, cnn/, lstm/, cnn_lstm/   (trained model files, not committed)
+├── artifacts/       scalers/, encoders/, metadata/        (preprocessing + threshold metadata)
+├── reports/         audit/, figures/, results/
+├── backend/         app/{api,schemas,services,models,core}, tests/
+├── frontend/        React + Vite + Recharts dashboard
+├── scripts/         CLI entry points (audit, training, simulator)
+├── tests/           tests for the ML pipeline
+└── docs/            viva Q&A
 ```
 
 ## Development phases
