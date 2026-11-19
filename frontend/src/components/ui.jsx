@@ -8,6 +8,7 @@ const ICONS = {
   overview: <><rect x="3" y="3" width="7.5" height="7.5" rx="1.5" /><rect x="13.5" y="3" width="7.5" height="7.5" rx="1.5" /><rect x="3" y="13.5" width="7.5" height="7.5" rx="1.5" /><rect x="13.5" y="13.5" width="7.5" height="7.5" rx="1.5" /></>,
   meters: <><circle cx="12" cy="12" r="9" /><path d="M12 12l4.2-4.2" /><path d="M7 16.5h.01M5.2 12h.01M7 7.5h.01M12 5.2v.01" /></>,
   alerts: <><path d="M6 9.5a6 6 0 1 1 12 0c0 5 2 6.5 2 6.5H4s2-1.5 2-6.5" /><path d="M10 19.5a2 2 0 0 0 4 0" /></>,
+  test: <><path d="M14.5 2v6.5l4.5 4.5M9.5 2v6.5L4 16c-1.5 2.5 0 6 3 6h10c3 0 4.5-3.5 3-6l-5.5-7.5V2h-5z" /><path d="M7 16h10" /><path d="M11 11h2" /></>,
   model: <path d="M5 20V11M12 20V4M19 20v-6" />,
   about: <><circle cx="12" cy="12" r="9" /><path d="M12 11v5.5M12 7.5v.01" /></>,
   search: <><circle cx="11" cy="11" r="6.5" /><path d="M16 16l4.5 4.5" /></>,
@@ -281,6 +282,25 @@ export function SimulationBanner({ onRefresh }) {
             >
               <span>▶</span> Start Inspection
             </button>
+            <Link
+              to="/test"
+              style={{
+                display: "inline-flex",
+                alignItems: "center",
+                gap: 5,
+                padding: "5px 11px",
+                borderRadius: 7,
+                fontSize: 13,
+                fontWeight: 500,
+                textDecoration: "none",
+                background: "var(--glass)",
+                border: "1px solid var(--border)",
+                color: "var(--text-1)",
+              }}
+              title="Test custom or preset meter readings"
+            >
+              <span>🧪</span> Test Meter
+            </Link>
             <button className="ghost" disabled={busy} onClick={handleReset} title="Clear database and start fresh">
               🔄 Reset Demo
             </button>

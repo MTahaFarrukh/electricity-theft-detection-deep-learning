@@ -21,6 +21,11 @@ export const api = {
   alerts: (status) => request(`/alerts${status ? `?status=${status}` : ""}`),
   updateAlert: (id, status) => request(`/alerts/${id}`, { method: "PATCH", body: JSON.stringify({ status }) }),
   modelMetrics: () => request("/model/metrics"),
+  predict: (readings, meter_id = null) =>
+    request("/predict", {
+      method: "POST",
+      body: JSON.stringify({ readings, meter_id: meter_id || undefined }),
+    }),
   simulationStatus: () => request("/simulation/status"),
   startSimulation: (limit = 30, interval = 1.0) =>
     request(`/simulation/start?limit=${limit}&interval=${interval}`, { method: "POST" }),

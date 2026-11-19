@@ -11,6 +11,7 @@ import Dashboard from "./pages/Dashboard";
 import MeterDetail from "./pages/MeterDetail";
 import Meters from "./pages/Meters";
 import ModelPerformance from "./pages/ModelPerformance";
+import TestModel from "./pages/TestModel";
 import { BrandMark, Icon } from "./components/ui";
 import { CommandPalette, Splash, ThemeToggle } from "./components/visuals";
 import { fmtScore } from "./hooks";
@@ -126,6 +127,7 @@ function Shell() {
               <Route path="/meters" element={<Meters />} />
               <Route path="/meters/:meterId" element={<MeterDetail />} />
               <Route path="/alerts" element={<Alerts />} />
+              <Route path="/test" element={<TestModel />} />
               <Route path="/model" element={<ModelPerformance />} />
               <Route path="/about" element={<About />} />
               <Route path="*" element={
