@@ -45,17 +45,15 @@ def health(request: Request):
 
 @router.post("/predict", response_model=PredictResponse)
 def predict(body: PredictRequest, session: Session = Depends(get_session), predictor=Depends(get_predictor)):
-    readings = _normalize_length(body.readings, predictor.n_days)
-    return score_and_store(session, predictor, body.meter_id, readings)
+    _check_length(body.readings, predictor.n_days)
+    return score_and_store(session, predictor, body.meter_id, body.readings)
 
 
 @router.post("/predict/batch", response_model=list[PredictResponse])
 def predict_batch(body: BatchPredictRequest, session: Session = Depends(get_session), predictor=Depends(get_predictor)):
-    normalized_items = []
     for item in body.items:
-        norm_readings = _normalize_length(item.readings, predictor.n_days)
-        normalized_items.append(score_and_store(session, predictor, item.meter_id, norm_readings))
-    return normalized_items
+        _check_length(item.readings, predictor.n_days)
+    return [score_and_store(session, predictor, item.meter_id, item.readings) for item in body.items]
 
 
 @router.get("/meters", response_model=list[MeterSummary])
